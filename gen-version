@@ -26,7 +26,7 @@ if [ ! -z "$(git rev-parse --abbrev-ref HEAD 2> /dev/null)" ]; then
   LAST_TAG="$(echo ${GIT_VERSION} | cut -d- -f1)"
   COMMITS_SINCE_TAG="$(echo ${GIT_VERSION} | cut -d- -f2)"
   GIT_HASH="$(echo ${GIT_VERSION} | cut -d- -f3)"
-  BRANCH=".$(git rev-parse --abbrev-ref HEAD | perl -p -e 's/-//g;')"
+  BRANCH=".$(git rev-parse --abbrev-ref HEAD | perl -p -e 's/[^[:alnum:]]//g;')"
   [ "${BRANCH}" = ".master" ] && BRANCH=''
 
   TAG="$(git describe --tags --exact-match 2> /dev/null | cut -d- -f 2-)"
