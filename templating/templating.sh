@@ -31,7 +31,7 @@ include() {
     local skip
     local line
     local condition
-    while IFS= read -r line; do
+    ( cat "$1" && echo ) | while IFS= read -r line; do
         if [[ $line = ${tmpl_prefix}ENDIF* ]]; then
             skip=
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
@@ -61,7 +61,7 @@ include() {
         else
             echo "$line"
         fi
-    done < "$1"
+    done
     [ "$tmpl_debug" != "" ] && echo "$tmpl_comment /$1"
 }
 
