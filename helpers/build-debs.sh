@@ -38,8 +38,20 @@ for dir in "${dirs[@]}"; do
     echo "Unable to parse name of the source from ${dir}"
     exit 1
   fi
+  # Let's try really hard to find the release name of the distribution
+  distro_release="$(source /etc/os-release; printf ${VERSION_CODENAME})"
+  if [ -z "${distro_release}" -a -n "$(grep 'VERSION_ID="14.04"' /etc/os-release)" ]; then
+    distro_release='trusty'
+  fi
+  if [ -z "${distro_release}" ]; then
+    distro_release="$(perl -n -e '/VERSION=".* \((.*)\)"/ && print $1' /etc/os-release)"
+  fi
+  if [ -z "${distro_release}" ]; then
+    echo 'Unable to determine distribution codename!'
+    exit 1
+  fi
   cat > debian/changelog << EOF
-$sourcename (${BUILDER_VERSION}-${BUILDER_RELEASE}) unstable; urgency=medium
+$sourcename (${BUILDER_VERSION}-${BUILDER_RELEASE}.${distro_release}) unstable; urgency=medium
 
   * Automatic build
 
