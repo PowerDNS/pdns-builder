@@ -59,7 +59,7 @@ for spec in "${specs[@]}"; do
         # Download sources
         spectool -g -R "$spec"
         # Build the rpm
-        rpmbuild --define "_sdistdir /sdist" -bb "$spec"
+        rpmbuild --define "_sdistdir /sdist" -ba "$spec"
     else
         echo "Skipping spec (BUILDER_SKIP)"
     fi
