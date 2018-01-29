@@ -1,6 +1,8 @@
 #!/bin/bash
 # Build multiple rpm specs, after installing the build dependencies
 
+set -e # exit on helper error
+
 helpers=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 specs=()
