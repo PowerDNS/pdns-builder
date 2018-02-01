@@ -58,6 +58,6 @@ $sourcename (${BUILDER_VERSION}-${BUILDER_RELEASE}.${distro_release}) unstable; 
  -- PowerDNS.COM AutoBuilder <noreply@powerdns.com>  $(date -R)
 EOF
 
-  fakeroot debian/rules binary
+  fakeroot debian/rules binary || exit 1
   popd
 done
