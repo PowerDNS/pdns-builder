@@ -46,6 +46,15 @@ fi
 
 export BUILDER_TMP="$BUILDER_ROOT/tmp"
 
+# sed: turn off buffering or enable line buffering
+if sed --version 2>&1 > /dev/null ; then
+    # GNU sed
+    sed_nobuf="-u"
+else
+    # assume BSD sed (only tested on macOS)
+    sed_nobuf="-l"
+fi
+
 #######################################################################
 # Parse arguments and load optional .env file
 #
@@ -219,7 +228,7 @@ else
     }
     docker_steps_output() {
         # Only display steps, with FROM commands in bold
-        grep --line-buffered '^Step [0-9]' | sed -l -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
+        grep --line-buffered '^Step [0-9]' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
     }
     timestamp=$(date '+%Y%m%d-%H%M%S')
     dockerlogfile="build_${target}_${BUILDER_VERSION}_${timestamp}.log"
