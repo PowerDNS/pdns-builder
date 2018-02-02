@@ -206,9 +206,20 @@ if [ "$verbose" = "1" ]; then
 else
     # Default output: only show build steps, but log everything to file.
     # Quiet: don't even show build steps, but still log to file.
+    timestamp() {
+        # Based on https://unix.stackexchange.com/questions/26728/
+        start=`date '+%s'`
+        while IFS= read -r line; do
+            now=`date '+%s'`
+            t=$(($now - $start))
+            s=$(($t % 60))
+            m=$(($t / 60))
+            printf '[%2d:%02d] %s\n' "$m" "$s" "$line"
+        done
+    }
     docker_steps_output() {
         # Only display steps, with FROM commands in bold
-        grep --line-buffered '^Step [0-9]' | sed -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" > "$dockeroutdev"
+        grep --line-buffered '^Step [0-9]' | sed -l -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
     }
     timestamp=$(date '+%Y%m%d-%H%M%S')
     dockerlogfile="build_${target}_${BUILDER_VERSION}_${timestamp}.log"
