@@ -47,7 +47,7 @@ fi
 export BUILDER_TMP="$BUILDER_ROOT/tmp"
 
 # sed: turn off buffering or enable line buffering
-if sed --version 2>&1 > /dev/null ; then
+if sed --version > /dev/null 2>&1; then
     # GNU sed
     sed_nobuf="-u"
 else
