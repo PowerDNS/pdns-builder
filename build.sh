@@ -67,6 +67,7 @@ usage() {
     echo
     echo "Options:"
     echo "  -C              - Run docker build with --no-cache"
+    echo "  -c              - Enable builder package cache"
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -m MODULES      - Build only specific components (command separated; warning: this disables install tests)"
@@ -100,9 +101,11 @@ export BUILDER_RELEASE=1pdns
 export M_all=1
 package_match=""
 
-while getopts ":CV:R:svqm:p:" opt; do
+while getopts ":CcV:R:svqm:p:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
+        ;;
+    c)  export BUILDER_CACHE=1
         ;;
     V)  _version="$OPTARG"
         ;;
@@ -162,6 +165,12 @@ else
     BUILDER_VERSION="$_version"
 fi
 export BUILDER_VERSION
+
+# Create cache directory for caching assets between builds
+if [ "$BUILDER_CACHE" = "1" ]; then
+    cache="$BUILDER_ROOT/cache/$target"
+    mkdir -p "$cache/new"
+fi
 
 #######################################################################
 # Some initialization
@@ -267,6 +276,17 @@ if [ "$target" != "sdist" ]; then
     [ -d "$dest/$target" ] || mkdir "$dest/$target"
     docker cp "$container:/dist" "$dest/$target/"
 fi
+
+# Copy new cache assets to speedup the next build
+if [ "$BUILDER_CACHE" = "1" ]; then
+    if docker cp "$container:/cache/new" "$cache/" ; then
+        if [ -d "$cache/new" ]; then
+            mv "$cache"/new/* "$cache/" || true
+        fi
+    fi
+fi
+
+# Update 'latest' symlink
 rm -f "$BUILDER_TMP/latest" || true
 ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
 
