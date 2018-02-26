@@ -70,7 +70,7 @@ usage() {
     echo "  -c              - Enable builder package cache"
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
-    echo "  -m MODULES      - Build only specific components (command separated; warning: this disables install tests)"
+    echo "  -m MODULES      - Build only specific components (comma separated; warning: this disables install tests)"
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -s              - Skip install tests"
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
