@@ -237,7 +237,7 @@ else
     }
     docker_steps_output() {
         # Only display steps, with FROM commands in bold
-        grep --line-buffered '^Step [0-9]' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
+        grep --line-buffered -E '^(Step [0-9]|::: )' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
     }
     timestamp=$(date '+%Y%m%d-%H%M%S')
     dockerlogfile="build_${target}_${BUILDER_VERSION}_${timestamp}.log"
