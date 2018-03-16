@@ -56,6 +56,7 @@ if [ -x /usr/bin/rpmspec ]; then
         # First check if we have the rpms cached
         if [ "$cache" = "1" ] && check_cache "$spec"; then
             skip_specs["$spec"]=1
+            echo "::: $spec (cached)"
             continue
         fi
 
@@ -98,6 +99,7 @@ for spec in "${specs[@]}"; do
     echo "==================================================================="
     echo "-> $spec"
     if [ -z "${skip_specs[$spec]}" ]; then
+        echo "::: $spec"
         # Download sources
         spectool -g -R "$spec"
         
