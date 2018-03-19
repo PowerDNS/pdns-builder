@@ -45,6 +45,18 @@ if [ ! -z "$BUILDER_CACHE" ] && [ ! -z "$BUILDER_CACHE_THIS" ]; then
     mkdir -p /cache/new
 fi
 
+export SRC_VERSION=$BUILDER_VERSION
+OIFS=$IFS
+IFS='-' version_elems=($BUILDER_VERSION)
+IFS=$OIFS
+if [ ${#version_elems[@]} -gt 1 ]; then
+  # There's a dash in the version number, indicating a pre-release
+  # e.g. 1.2.3-alpha1.100.gaff36b2
+  # which would be split in 1.2.3 and alpha1.100.gaff36b2
+  BUILDER_VERSION=${version_elems[0]}
+  BUILDER_RELEASE="0.${version_elems[1]}.${BUILDER_RELEASE}"
+fi
+
 # Parse the specfiles to evaluate conditionals for builddeps, and store them in tempfiles
 # Also check for specs we need to skip (BUILDER_SKIP)
 tmpdir=$(mktemp -d /tmp/build-specs.parsed.XXXXXX)

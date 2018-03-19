@@ -50,6 +50,25 @@ for dir in "${dirs[@]}"; do
     echo 'Unable to determine distribution codename!'
     exit 1
   fi
+  OIFS=$IFS
+  IFS='-' version_elems=($BUILDER_VERSION)
+  IFS=$OIFS
+  if [ ${#version_elems[@]} -gt 1 ]; then
+    # There's a dash in the version number, indicating a pre-release
+    # e.g. 1.2.3-alpha1.100.gaff36b2
+    # which would be split in 1.2.3 and alpha1.100.gaff36b2
+    OIFS=$IFS
+    IFS='.' sub_version_elems=(${version_elems[1]})
+    IFS=$OIFS
+    # sub_version_elems would now be alpha1 100 and gaff36b2
+    BUILDER_VERSION="${version_elems[0]}~${sub_version_elems[0]}"
+    release="0.${sub_version_elems[1]}.${sub_version_elems[2]}"
+    if [ ${#sub_version_elems[@]} -eq 4 ]; then
+      # Branch is in there as well
+      release="${release}.${sub_version_elems[3]}"
+    fi
+    BUILDER_RELEASE="${release}.${BUILDER_RELEASE}"
+  fi
   cat > debian/changelog << EOF
 $sourcename (${BUILDER_VERSION}-${BUILDER_RELEASE}.${distro_release}) unstable; urgency=medium
 
