@@ -1,0 +1,5 @@
+# Skip any installation
+install: true
+
+script:
+  - ./tests/test_versioning.sh
