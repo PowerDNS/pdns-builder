@@ -53,7 +53,7 @@ fi
 
 set -e
 
-version=`echo "${BUILDER_VERSION:-0.0.0}" | sed 's/[+]/./'`
+version=`echo "${BUILDER_VERSION:-0.0.0}" | sed 's/[-+]/./'`
 
 build_dir=builder/tmp
 [ ! -d "$build_dir" ] && mkdir "$build_dir"
