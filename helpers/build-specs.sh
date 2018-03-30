@@ -5,6 +5,8 @@ set -e # exit on helper error
 
 helpers=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+source "$helpers/functions.sh"
+
 specs=()
 for spec in "$@"; do
     # If BUILDER_PACKAGE_MATCH is set, only build the specs that match, otherwise build all
@@ -45,6 +47,7 @@ if [ ! -z "$BUILDER_CACHE" ] && [ ! -z "$BUILDER_CACHE_THIS" ]; then
     mkdir -p /cache/new
 fi
 
+set_rpm_versions
 # Parse the specfiles to evaluate conditionals for builddeps, and store them in tempfiles
 # Also check for specs we need to skip (BUILDER_SKIP)
 tmpdir=$(mktemp -d /tmp/build-specs.parsed.XXXXXX)

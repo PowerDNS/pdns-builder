@@ -4,6 +4,8 @@
 
 helpers=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+source "$helpers/functions.sh"
+
 dirs=()
 for dir in "$@"; do
   # If BUILDER_PACKAGE_MATCH is set, only build the packages that match, otherwise build all
@@ -50,8 +52,9 @@ for dir in "${dirs[@]}"; do
     echo 'Unable to determine distribution codename!'
     exit 1
   fi
+  set_debian_versions
   cat > debian/changelog << EOF
-$sourcename (${BUILDER_VERSION}-${BUILDER_RELEASE}.${distro_release}) unstable; urgency=medium
+$sourcename (${BUILDER_DEB_VERSION}-${BUILDER_DEB_RELEASE}.${distro_release}) unstable; urgency=medium
 
   * Automatic build
 
