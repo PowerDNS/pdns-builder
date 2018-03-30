@@ -308,5 +308,12 @@ t_end=`date +%s`
 runtime=$((t_end - t_start))
 echo "Build took $runtime seconds"
 
+if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
+  if [ -z "$quiet" ]; then
+    echo -e "Running post-build script"
+  fi
+  "$BUILDER_SUPPORT_ROOT/post-build"
+fi
+
 echo "You can test manually with:  docker run -it --rm $image"
 
