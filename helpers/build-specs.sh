@@ -47,7 +47,6 @@ if [ ! -z "$BUILDER_CACHE" ] && [ ! -z "$BUILDER_CACHE_THIS" ]; then
     mkdir -p /cache/new
 fi
 
-export SRC_VERSION=$BUILDER_VERSION
 set_rpm_versions
 # Parse the specfiles to evaluate conditionals for builddeps, and store them in tempfiles
 # Also check for specs we need to skip (BUILDER_SKIP)

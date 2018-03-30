@@ -54,7 +54,7 @@ for dir in "${dirs[@]}"; do
   fi
   set_debian_versions
   cat > debian/changelog << EOF
-$sourcename (${BUILDER_VERSION}-${BUILDER_RELEASE}.${distro_release}) unstable; urgency=medium
+$sourcename (${BUILDER_DEB_VERSION}-${BUILDER_DEB_RELEASE}.${distro_release}) unstable; urgency=medium
 
   * Automatic build
 
