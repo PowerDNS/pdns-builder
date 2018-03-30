@@ -3,7 +3,7 @@ function join_by { local IFS="$1"; shift; echo "$*"; }
 
 set_debian_versions() {
   # Examples (BUILDER_RELEASE before is assumed to be 1pdns
-  # BUILDER_VERSION                BUILDER_VERSION after        BUILDER_RELEASE after
+  # BUILDER_VERSION                BUILDER_DEB_VERSION after    BUILDER_DEB_RELEASE after
   # 1.2.3                       => 1.2.3                        1pdns
   # 1.2.3.0.g123456             => 1.2.3+0.g123456              1pdns
   # 1.2.3-alpha1                => 1.2.3~alpha1                 1pdns
@@ -47,20 +47,21 @@ set_debian_versions() {
       version="${version}+${version_elems[4]}.${version_elems[3]}.${version_elems[5]}"
     fi
   fi
-  BUILDER_VERSION=$version
+  export BUILDER_DEB_VERSION=$version
+  export BUILDER_DEB_RELEASE=${BUILDER_RELEASE}
 }
 
 set_rpm_versions() {
   # Examples (BUILDER_RELEASE before is assumed to be 1pdns
-  # BUILDER_VERSION                BUILDER_VERSION after    BUILDER_RELEASE after
-  # 1.2.3                       => 1.2.3                    1pdns
-  # 1.2.3.0.g123456             => 1.2.3                    0.g123456.1pdns
-  # 1.2.3-alpha1                => 1.2.3                    0.alpha1.1pdns
-  # 1.2.3-alpha1.0.g123456      => 1.2.3                    0.alpha1.0.g12456.1pdns
-  # 1.2.3-alpha1.15.g123456     => 1.2.3                    0.alpha1.15.g12456.1pdns
-  # 1.2.3-rc2.12.branch.g123456 => 1.2.3                    0.rc2.branch.12.g123456.1pdns
-  # 1.2.3.15.mybranch.g123456   => 1.2.3                    mybranch.15.g123456.1pdns
-  # 1.2.3.15.g123456            => 1.2.3                    15.g123456.1pdns
+  # BUILDER_VERSION                BUILDER_RPM_VERSION after  BUILDER_RPM_RELEASE after
+  # 1.2.3                       => 1.2.3                      1pdns
+  # 1.2.3.0.g123456             => 1.2.3                      0.g123456.1pdns
+  # 1.2.3-alpha1                => 1.2.3                      0.alpha1.1pdns
+  # 1.2.3-alpha1.0.g123456      => 1.2.3                      0.alpha1.0.g12456.1pdns
+  # 1.2.3-alpha1.15.g123456     => 1.2.3                      0.alpha1.15.g12456.1pdns
+  # 1.2.3-rc2.12.branch.g123456 => 1.2.3                      0.rc2.branch.12.g123456.1pdns
+  # 1.2.3.15.mybranch.g123456   => 1.2.3                      mybranch.15.g123456.1pdns
+  # 1.2.3.15.g123456            => 1.2.3                      15.g123456.1pdns
   OIFS=$IFS
   IFS='-' version_elems=($BUILDER_VERSION)
   IFS=$OIFS
@@ -68,7 +69,7 @@ set_rpm_versions() {
   if [ ${#version_elems[@]} -gt 1 ]; then
     # There's a dash in the version number, indicating a pre-release
     # Take the version number
-    BUILDER_VERSION=${version_elems[0]}
+    BUILDER_RPM_VERSION=${version_elems[0]}
     OIFS=$IFS
     IFS='.' version_elems=(${version_elems[1]})
     IFS=$OIFS
@@ -78,7 +79,7 @@ set_rpm_versions() {
     OIFS=$IFS
     IFS='.' version_elems=(${version_elems})
     IFS=$OIFS
-    BUILDER_VERSION=$(join_by . ${version_elems[@]:0:3})
+    BUILDER_RPM_VERSION=$(join_by . ${version_elems[@]:0:3})
     version_elems=(${version_elems[@]:3})
   fi
 
@@ -90,11 +91,12 @@ set_rpm_versions() {
   release=''
   if [ ${#version_elems[@]} -eq 0 ]; then
     # This is a release
-    BUILDER_RELEASE="${prerel}${BUILDER_RELEASE}"
+    export BUILDER_RPM_RELEASE="${prerel}${BUILDER_RELEASE}"
   elif [ ${#version_elems[@]} -gt 2 ]; then
     # we have branch info
-    BUILDER_RELEASE="${prerel}${version_elems[1]}.${version_elems[0]}.${version_elems[2]}.${BUILDER_RELEASE}"
+    export BUILDER_RPM_RELEASE="${prerel}${version_elems[1]}.${version_elems[0]}.${version_elems[2]}.${BUILDER_RELEASE}"
   else
-    BUILDER_RELEASE="${prerel}${version_elems[0]}.${version_elems[1]}.${BUILDER_RELEASE}"
+    export BUILDER_RPM_RELEASE="${prerel}${version_elems[0]}.${version_elems[1]}.${BUILDER_RELEASE}"
   fi
+  export BUILDER_RPM_VERSION
 }

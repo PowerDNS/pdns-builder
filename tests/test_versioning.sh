@@ -42,12 +42,13 @@ for ctr in ${!src_versions[@]}; do
   BUILDER_VERSION=${src_versions[$ctr]}
   BUILDER_RELEASE=$builder_release
   set_debian_versions
-  assert_equal $BUILDER_VERSION ${deb_versions[$ctr]}
-  assert_equal $BUILDER_RELEASE $builder_release
+  assert_equal $BUILDER_DEB_VERSION ${deb_versions[$ctr]}
+  assert_equal $BUILDER_DEB_RELEASE $builder_release
 
-  BUILDER_VERSION=${src_versions[$ctr]}
-  BUILDER_RELEASE=$builder_release
   set_rpm_versions
-  assert_equal $BUILDER_VERSION ${rpm_versions[$ctr]}
-  assert_equal $BUILDER_RELEASE ${rpm_releases[$ctr]}
+  assert_equal $BUILDER_RPM_VERSION ${rpm_versions[$ctr]}
+  assert_equal $BUILDER_RPM_RELEASE ${rpm_releases[$ctr]}
+
+  assert_equal $BUILDER_VERSION ${src_versions[$ctr]}
+  assert_equal $BUILDER_RELEASE $builder_release
 done
