@@ -296,9 +296,9 @@ ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
             
 if [ -z "$quiet" ]; then
     echo
-    tree "$dest/sdist" || find "$dest/sdist"
+    tree "$dest/sdist" 2>/dev/null || find "$dest/sdist"
     if [ "$target" != "sdist" ]; then 
-        tree "$dest/$target" || find "$dest/$target"
+        tree "$dest/$target" 2>/dev/null || find "$dest/$target"
     fi
 fi
 
@@ -307,6 +307,13 @@ echo -e "${color_green}SUCCESS, files can be found in ${dest}${color_reset}"
 t_end=`date +%s`
 runtime=$((t_end - t_start))
 echo "Build took $runtime seconds"
+
+if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
+  if [ -z "$quiet" ]; then
+    echo -e "Running post-build script"
+  fi
+  "$BUILDER_SUPPORT_ROOT/post-build"
+fi
 
 echo "You can test manually with:  docker run -it --rm $image"
 

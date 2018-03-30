@@ -184,3 +184,9 @@ an internal bash function used to implement `@INCLUDE`. Note that `@IF`
 currently cannot be nested.
 
 The templating implementation can be found in `templating/templating.sh`.
+
+#### Post Build steps
+
+When certain steps or commands are needed after building, add an exectuable
+file called `post-build` to `builder-support`. After a build, this file will
+be run.
