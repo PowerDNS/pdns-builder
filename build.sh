@@ -296,9 +296,9 @@ ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
             
 if [ -z "$quiet" ]; then
     echo
-    tree "$dest/sdist" || find "$dest/sdist"
+    tree "$dest/sdist" 2>/dev/null || find "$dest/sdist"
     if [ "$target" != "sdist" ]; then 
-        tree "$dest/$target" || find "$dest/$target"
+        tree "$dest/$target" 2>/dev/null || find "$dest/$target"
     fi
 fi
 
