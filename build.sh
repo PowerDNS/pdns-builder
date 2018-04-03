@@ -312,7 +312,7 @@ if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
   if [ -z "$quiet" ]; then
     echo -e "Running post-build script"
   fi
-  "$BUILDER_SUPPORT_ROOT/post-build"
+  BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build"
 fi
 
 echo "You can test manually with:  docker run -it --rm $image"
