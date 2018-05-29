@@ -1,6 +1,22 @@
 # https://stackoverflow.com/questions/1527049/join-elements-of-an-array#17841619
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
+set_python_src_versions() {
+  # setuptools is very strict about PEP 440. SO we need some magic to make this go away
+  # TODO real PEP 440 support
+
+  # BUILDER_VERSION                BUILDER_PYTHON_SRC_VERSION       REAL PEP 440
+  # 1.2.3                       => 1.2.3                            1.2.3
+  # 1.2.3.0.g123456             => 1.2.3.0.g123456                  1.2.3+0.g123456
+  # 1.2.3-alpha1                => 1.2.3a1                          1.2.3a1
+  # 1.2.3-alpha1.0.g123456      => 1.2.3-alpha1.0.g123456           1.2.3a1+0.g123456
+  # 1.2.3-alpha1.15.g123456     => 1.2.3-alpha1.15.g123456          1.2.3a1+15.g123456
+  # 1.2.3-rc2.12.branch.g123456 => 1.2.3-rc2.branch.12.g123456      1.2.3rc2+branch.12.g123456
+  # 1.2.3.15.mybranch.g123456   => 1.2.3.15.mybranch.g123456        1.2.3+mybranch.15.g123456
+  # 1.2.3.15.g123456            => 1.2.3.15.g123456                 1.2.3+15.g123456
+  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | sed -e 's,-alpha\([0-9]\+\)$,a\1,' -e 's,-beta\([0-9]\+\)$,b\1,' -e 's,-rc\([0-9]\+\)$,rc\1,')"
+}
+
 set_debian_versions() {
   # Examples (BUILDER_RELEASE before is assumed to be 1pdns
   # BUILDER_VERSION                BUILDER_DEB_VERSION after    BUILDER_DEB_RELEASE after
