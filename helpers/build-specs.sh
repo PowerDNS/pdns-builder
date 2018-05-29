@@ -48,6 +48,7 @@ if [ ! -z "$BUILDER_CACHE" ] && [ ! -z "$BUILDER_CACHE_THIS" ]; then
 fi
 
 set_rpm_versions
+set_python_src_versions
 # Parse the specfiles to evaluate conditionals for builddeps, and store them in tempfiles
 # Also check for specs we need to skip (BUILDER_SKIP)
 tmpdir=$(mktemp -d /tmp/build-specs.parsed.XXXXXX)
