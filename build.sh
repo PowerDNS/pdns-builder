@@ -71,6 +71,7 @@ usage() {
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -m MODULES      - Build only specific components (comma separated; warning: this disables install tests)"
+    echo "  -P              - Run docker build with --pull"
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -s              - Skip install tests"
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
@@ -127,6 +128,8 @@ while getopts ":CcV:R:svqm:p:" opt; do
             export M_$m=1
             echo "enabled module: $m"
         done
+        ;;
+    P)  dockeropts+=('--pull')
         ;;
     p)  package_match="$OPTARG"
         export skiptests=1
