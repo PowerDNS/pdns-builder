@@ -2,6 +2,11 @@
 
 echo "*** This is builder-support/post-build-test"
 
+if [ "$BUILDER_TARGET" = "sdist" ]; then
+    echo "Skipping post-build-test for sdist target"
+    exit 0
+fi
+
 # Pretend to do some tests that require a redis server
 
 # This id is the container id, which is also used as the --link hostname.
