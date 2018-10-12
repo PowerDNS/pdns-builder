@@ -74,6 +74,7 @@ usage() {
     echo "  -P              - Run docker build with --pull"
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -s              - Skip install tests"
+    echo "  -S              - Force running of install tests, even if this is not a full build"
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
     echo "  -q              - Be more quiet. Build error details are still printed on build error."
     echo
@@ -94,6 +95,7 @@ declare -a dockeropts
 verbose=""
 quiet=""
 dockeroutdev=/dev/stdout
+forcetests=
 
 # RPM release tag (%{dist} will always be appended)
 export BUILDER_RELEASE=1pdns
@@ -114,6 +116,8 @@ while getopts ":CcV:R:svqm:p:" opt; do
         ;;
     s)  export skiptests=1
         echo "NOTE: Skipping install tests, as requested with -s"
+        ;;
+    S)  export forcetests=1
         ;;
     v)  verbose=1
         ;;
@@ -144,6 +148,11 @@ while getopts ":CcV:R:svqm:p:" opt; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ "$skiptests" = "1" ] && [ "$forcetests" = "1" ]; then
+    export skiptests=""
+    echo -e "${color_red}WARNING: Force running of install tests without a full build${color_reset}"
+fi
 
 # Build target distribution
 target="$1"
