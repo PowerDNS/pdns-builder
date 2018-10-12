@@ -14,7 +14,7 @@ set_python_src_versions() {
   # 1.2.3-rc2.12.branch.g123456 => 1.2.3-rc2.branch.12.g123456      1.2.3rc2+branch.12.g123456
   # 1.2.3.15.mybranch.g123456   => 1.2.3.15.mybranch.g123456        1.2.3+mybranch.15.g123456
   # 1.2.3.15.g123456            => 1.2.3.15.g123456                 1.2.3+15.g123456
-  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | sed -e 's,-alpha\([0-9]\+\)$,a\1,' -e 's,-beta\([0-9]\+\)$,b\1,' -e 's,-rc\([0-9]\+\)$,rc\1,')"
+  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | perl -pe 's,-alpha([0-9]+)$,a\1,' | perl -pe 's,-beta([0-9]+)$,b\1,' | perl -pe 's,-rc([0-9]+)$,rc\1,')"
 }
 
 set_debian_versions() {
