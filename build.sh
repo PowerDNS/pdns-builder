@@ -303,9 +303,10 @@ rm -f "$BUILDER_TMP/latest" || true
 ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
 
 #######################################################################
-# Build success output
+# Build success output and post-build hooks
 #
             
+# List the files we created
 if [ -z "$quiet" ]; then
     echo
     tree "$dest/sdist" 2>/dev/null || find "$dest/sdist"
@@ -314,26 +315,32 @@ if [ -z "$quiet" ]; then
     fi
 fi
 
-echo -e "${color_green}SUCCESS, files can be found in ${dest}${color_reset}"
+# Print this hint before hooks, in case they fail and you need to investigate
+echo
+echo "You can test manually with:  docker run -it --rm $image"
 
-t_end=`date +%s`
-runtime=$((t_end - t_start))
-echo "Build took $runtime seconds"
-
+# Run post-build-test hook
 if [ "$skiptests" != "1" ] && [ -x "$BUILDER_SUPPORT_ROOT/post-build-test" ]; then
   if [ -z "$quiet" ]; then
+    echo
     echo -e "Running post-build-test script"
   fi
   BUILDER_IMAGE="${image}" BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build-test"
 fi
 
-
+# Run post-build hook
 if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
   if [ -z "$quiet" ]; then
+    echo
     echo -e "Running post-build script"
   fi
   BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build"
 fi
 
-echo "You can test manually with:  docker run -it --rm $image"
+# Report success
+echo
+echo -e "${color_green}SUCCESS, files can be found in ${dest}${color_reset}"
+t_end=`date +%s`
+runtime=$((t_end - t_start))
+echo "Build took $runtime seconds"
 
