@@ -1,0 +1,28 @@
+# This builds the source distributions for all components
+
+# =========================================================================
+# Deliberately using alpine with incompatible libc to ensure we are
+# not sneaking in any binaries, and because it's light and up to date.
+FROM alpine:3.7 as sdist
+RUN apk add --no-cache tar
+ARG BUILDER_VERSION
+
+# Copying minimal set of files to avoid cache invalidation
+RUN mkdir /build
+WORKDIR /build
+COPY src/ src/
+RUN mkdir /sdist
+
+# Build module A
+@IF [ ! -z "$M_all$M_a" ]
+RUN cd src/ && tar -cvzf /sdist/demo-a-$BUILDER_VERSION.tar.gz --transform "s,^,demo-a-$BUILDER_VERSION/," demo-a.sh
+@ENDIF
+
+# Build module B
+@IF [ ! -z "$M_all$M_a" ]
+RUN cd src/ && tar -cvzf /sdist/demo-b-$BUILDER_VERSION.tar.gz --transform "s,^,demo-b-$BUILDER_VERSION/," demo-b.sh
+@ENDIF
+
+# Show contents for build debugging
+RUN ls -l /sdist/*
+
