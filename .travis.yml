@@ -12,6 +12,7 @@ before_script:
   # - tree /home/travis/build/PowerDNS/pdns-builder/demo/builder/cache
 
 script:
+  - ./tests/test_versioning.sh
   - cd demo
   - ./prepare.sh
   - ./builder/build.sh sdist
