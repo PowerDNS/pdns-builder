@@ -320,6 +320,14 @@ t_end=`date +%s`
 runtime=$((t_end - t_start))
 echo "Build took $runtime seconds"
 
+if [ "$skiptests" != "1" ] && [ -x "$BUILDER_SUPPORT_ROOT/post-build-test" ]; then
+  if [ -z "$quiet" ]; then
+    echo -e "Running post-build-test script"
+  fi
+  BUILDER_IMAGE="${image}" BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build-test"
+fi
+
+
 if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
   if [ -z "$quiet" ]; then
     echo -e "Running post-build script"

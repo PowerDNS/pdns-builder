@@ -3,8 +3,8 @@ FROM dist-base as dist
 # If you want to install extra packages or do generic configuration,
 # do it before the COPY. Either here, or in the dist-base layer.
 
-# Test script requirements (we currently build redis ourselves, so included in localinstall)
-#RUN yum install -y redis
+# Test script requirements
+RUN yum install -y redis
 
 COPY --from=sdist /sdist /sdist
 COPY --from=package-builder /dist /dist
