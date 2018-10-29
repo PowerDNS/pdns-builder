@@ -104,7 +104,7 @@ export BUILDER_RELEASE=1pdns
 export M_all=1
 package_match=""
 
-while getopts ":CcV:R:svqm:p:" opt; do
+while getopts ":CcV:R:svqm:Pp:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
