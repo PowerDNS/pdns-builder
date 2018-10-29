@@ -1,5 +1,29 @@
-# Skip any installation
-install: true
+sudo: required
+
+#cache:
+#  directories:
+#    - /home/travis/build/PowerDNS/pdns-builder/demo/builder/cache
+
+services:
+  - docker
+
+before_script:
+  - sudo apt-get install -y tree
+  # - tree /home/travis/build/PowerDNS/pdns-builder/demo/builder/cache
 
 script:
   - ./tests/test_versioning.sh
+  - cd demo
+  - ./prepare.sh
+  - ./builder/build.sh sdist
+  - ./builder/build.sh centos-7
+  # Again, now very fast due to the layer cache 
+  - ./builder/build.sh centos-7
+  # Three cache builds:
+  # - First one will write the vendor cache
+  - ./builder/build.sh -c centos-7
+  # - Second one will use the vendor cache, but the Docker layer cache gets invalidated by the new cache file
+  - ./builder/build.sh -c centos-7
+  # - Third one is very fast due to the Docker layer cache
+  - ./builder/build.sh -c centos-7
+

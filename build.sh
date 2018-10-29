@@ -74,6 +74,7 @@ usage() {
     echo "  -P              - Run docker build with --pull"
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -s              - Skip install tests"
+    echo "  -S              - Force running of install tests, even if this is not a full build"
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
     echo "  -q              - Be more quiet. Build error details are still printed on build error."
     echo
@@ -94,6 +95,7 @@ declare -a dockeropts
 verbose=""
 quiet=""
 dockeroutdev=/dev/stdout
+forcetests=
 
 # RPM release tag (%{dist} will always be appended)
 export BUILDER_RELEASE=1pdns
@@ -114,6 +116,8 @@ while getopts ":CcV:R:svqm:p:" opt; do
         ;;
     s)  export skiptests=1
         echo "NOTE: Skipping install tests, as requested with -s"
+        ;;
+    S)  export forcetests=1
         ;;
     v)  verbose=1
         ;;
@@ -144,6 +148,11 @@ while getopts ":CcV:R:svqm:p:" opt; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ "$skiptests" = "1" ] && [ "$forcetests" = "1" ]; then
+    export skiptests=""
+    echo -e "${color_red}WARNING: Force running of install tests without a full build${color_reset}"
+fi
 
 # Build target distribution
 target="$1"
@@ -294,9 +303,10 @@ rm -f "$BUILDER_TMP/latest" || true
 ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
 
 #######################################################################
-# Build success output
+# Build success output and post-build hooks
 #
             
+# List the files we created
 if [ -z "$quiet" ]; then
     echo
     tree "$dest/sdist" 2>/dev/null || find "$dest/sdist"
@@ -305,18 +315,32 @@ if [ -z "$quiet" ]; then
     fi
 fi
 
-echo -e "${color_green}SUCCESS, files can be found in ${dest}${color_reset}"
+# Print this hint before hooks, in case they fail and you need to investigate
+echo
+echo "You can test manually with:  docker run -it --rm $image"
 
-t_end=`date +%s`
-runtime=$((t_end - t_start))
-echo "Build took $runtime seconds"
+# Run post-build-test hook
+if [ "$skiptests" != "1" ] && [ -x "$BUILDER_SUPPORT_ROOT/post-build-test" ]; then
+  if [ -z "$quiet" ]; then
+    echo
+    echo -e "Running post-build-test script"
+  fi
+  BUILDER_IMAGE="${image}" BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build-test"
+fi
 
+# Run post-build hook
 if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
   if [ -z "$quiet" ]; then
+    echo
     echo -e "Running post-build script"
   fi
   BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build"
 fi
 
-echo "You can test manually with:  docker run -it --rm $image"
+# Report success
+echo
+echo -e "${color_green}SUCCESS, files can be found in ${dest}${color_reset}"
+t_end=`date +%s`
+runtime=$((t_end - t_start))
+echo "Build took $runtime seconds"
 
