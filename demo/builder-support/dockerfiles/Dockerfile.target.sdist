@@ -4,6 +4,7 @@
 # Deliberately using alpine with incompatible libc to ensure we are
 # not sneaking in any binaries, and because it's light and up to date.
 FROM alpine:3.7 as sdist
+ARG BUILDER_CACHE_BUSTER=
 RUN apk add --no-cache tar
 ARG BUILDER_VERSION
 

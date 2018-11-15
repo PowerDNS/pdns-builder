@@ -77,6 +77,7 @@ usage() {
     echo "  -S              - Force running of install tests, even if this is not a full build"
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
     echo "  -q              - Be more quiet. Build error details are still printed on build error."
+    echo "  -b VALUE        - Docker cache buster, set to 'always', 'daily', 'weekly' or a literal value."
     echo
     echo "Targets:  $targets"
     echo
@@ -103,8 +104,9 @@ export BUILDER_RELEASE=1pdns
 # Modules to build
 export M_all=1
 package_match=""
+cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:" opt; do
+while getopts ":CcV:R:svqm:Pp:b:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -139,6 +141,8 @@ while getopts ":CcV:R:svqm:Pp:" opt; do
         export skiptests=1
         echo -e "${color_red}WARNING: Skipping install tests, because not all packages are being built${color_reset}"
         ;;
+    b)  cache_buster="$OPTARG"
+        ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
         ;;
@@ -153,6 +157,14 @@ if [ "$skiptests" = "1" ] && [ "$forcetests" = "1" ]; then
     export skiptests=""
     echo -e "${color_red}WARNING: Force running of install tests without a full build${color_reset}"
 fi
+
+cache_buster_value=""
+case ${cache_buster} in
+always) cache_buster_value=$(date +%s)     ;;
+daily)  cache_buster_value=$(date +%F)     ;;
+weekly) cache_buster_value=$(date +%Y-%W)  ;;
+*)      cache_buster_value=${cache_buster} ;;
+esac
 
 # Build target distribution
 target="$1"
@@ -221,6 +233,7 @@ buildcmd=(docker build --build-arg BUILDER_VERSION="$BUILDER_VERSION"
                        --build-arg PIP_INDEX_URL="$PIP_INDEX_URL"
                        --build-arg PIP_TRUSTED_HOST="$PIP_TRUSTED_HOST"
                        --build-arg npm_config_registry="$npm_config_registry"
+                       --build-arg BUILDER_CACHE_BUSTER="$cache_buster_value"
                        -t "$image" "${dockeropts[@]}" -f "$dockerfilepath" .)
 [ -z "$quiet" ] && echo "+ ${buildcmd[*]}"
 

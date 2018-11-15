@@ -164,6 +164,11 @@ For example:
   you should consider doing this in a separate stage and only apply any
   versioning after the actual build, so that the expensive steps can be cached.
 
+If you have a build step that relies on external, changing state (such as
+`apt-get update`), you may want to avoid caching this step forever. To do so,
+put `ARG BUILDER_CACHE_BUSTER=` before the step, and pass `-b daily` or `-b
+weekly` to build.sh.
+
 #### Templating
 
 Templating is done using a simple template engine written in bash. 
