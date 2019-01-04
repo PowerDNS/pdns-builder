@@ -73,7 +73,16 @@ if [ ! -z "$(git rev-parse --abbrev-ref HEAD 2> /dev/null)" ]; then
     COMMITS_SINCE_TAG="$(git log --oneline | wc -l)"
   fi
 
-  BRANCH=".$(git rev-parse --abbrev-ref HEAD | perl -p -e 's/[^[:alnum:]]//g;')"
+  BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+  # if CI_COMMIT_REF_SLUG is set, we're running inside GitLab CI and this name is safe to use
+  if [ -n "${CI_COMMIT_REF_SLUG}" ]; then
+    BRANCH="${CI_COMMIT_REF_SLUG}"
+  fi
+
+  BRANCH=".$(echo ${BRANCH} | perl -p -e 's/[^[:alnum:]]//g;')"
+
+  # If the branch is master, remove it
   [ "${BRANCH}" = ".master" ] && BRANCH=''
 
   VERSION="${LAST_TAG}.${COMMITS_SINCE_TAG}${BRANCH}.${GIT_HASH}${DIRTY}"
