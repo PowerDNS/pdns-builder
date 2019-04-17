@@ -52,6 +52,9 @@ for dir in "${dirs[@]}"; do
       distro_release="$(perl -n -e '/VERSION=".* \((.*)\)"/ && print $1' /etc/os-release)"
     fi
     if [ -z "${distro_release}" ]; then
+      distro_release="$(perl -n -e '/PRETTY_NAME="Debian GNU\/Linux (.*)\/sid"/ && print $1' /etc/os-release)"
+    fi
+    if [ -z "${distro_release}" ]; then
       echo 'Unable to determine distribution codename!'
       exit 1
     fi
