@@ -103,6 +103,10 @@ export BUILDER_RELEASE=1pdns
 
 # Modules to build
 export M_all=1
+
+# Modules to expose to a custom gen-version
+BUILDER_MODULES=''
+
 package_match=""
 cache_buster=""
 
@@ -129,6 +133,7 @@ while getopts ":CcV:R:svqm:Pp:b:" opt; do
     m)  export M_all=
         export skiptests=1
         echo -e "${color_red}WARNING: Skipping install tests, because not all components are being built${color_reset}"
+        BUILDER_MODULES="${OPTARG}"
         IFS=',' read -r -a modules <<< "$OPTARG"
         for m in "${modules[@]}"; do
             export M_$m=1
@@ -181,7 +186,7 @@ fi
 if [ "$_version" == "" ]; then
     if [ -x "$BUILDER_SUPPORT_ROOT/gen-version" ]; then
         # Allows a repo to provide a custom gen-version script
-        BUILDER_VERSION=`"$BUILDER_SUPPORT_ROOT/gen-version"`
+        BUILDER_VERSION=$(BUILDER_MODULES="${BUILDER_MODULES}" "$BUILDER_SUPPORT_ROOT/gen-version")
     else
         BUILDER_VERSION=`"$BUILDER_ROOT/gen-version"`
     fi 
