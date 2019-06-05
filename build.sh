@@ -71,6 +71,7 @@ usage() {
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -m MODULES      - Build only specific components (comma separated; warning: this disables install tests)"
+    echo "  -e EPOCH        - Set a specific Epoch for packages"
     echo "  -P              - Run docker build with --pull"
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -s              - Skip install tests"
@@ -110,7 +111,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:b:" opt; do
+while getopts ":CcV:R:svqm:Pp:b:e:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -119,6 +120,8 @@ while getopts ":CcV:R:svqm:Pp:b:" opt; do
     V)  _version="$OPTARG"
         ;;
     R)  export BUILDER_RELEASE="$OPTARG"
+        ;;
+    e)  export BUILDER_EPOCH="$OPTARG"
         ;;
     s)  export skiptests=1
         echo "NOTE: Skipping install tests, as requested with -s"
@@ -234,6 +237,7 @@ echo -e "${color_white}Building docker image: ${image}${color_reset}"
 buildcmd=(docker build --build-arg BUILDER_VERSION="$BUILDER_VERSION"
                        --build-arg BUILDER_RELEASE="$BUILDER_RELEASE"
                        --build-arg BUILDER_PACKAGE_MATCH="$package_match"
+                       --build-arg BUILDER_EPOCH="$BUILDER_EPOCH"
                        --build-arg APT_URL="$APT_URL"
                        --build-arg PIP_INDEX_URL="$PIP_INDEX_URL"
                        --build-arg PIP_TRUSTED_HOST="$PIP_TRUSTED_HOST"
