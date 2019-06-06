@@ -58,9 +58,15 @@ for dir in "${dirs[@]}"; do
       echo 'Unable to determine distribution codename!'
       exit 1
     fi
+    if [ -z "$BUILDER_EPOCH" ]; then
+      epoch_string=""
+    else
+      epoch_string="${BUILDER_EPOCH}:"
+    fi
+    echo "EPOCH_STRING=${epoch_string}"
     set_debian_versions
     cat > debian/changelog << EOF
-$sourcename (${BUILDER_DEB_VERSION}-${BUILDER_DEB_RELEASE}.${distro_release}) unstable; urgency=medium
+$sourcename (${epoch_string}${BUILDER_DEB_VERSION}-${BUILDER_DEB_RELEASE}.${distro_release}) unstable; urgency=medium
 
   * Automatic build
 

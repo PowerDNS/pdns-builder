@@ -104,6 +104,11 @@ for spec in "${specs[@]}"; do
     echo "-> $spec"
     if [ -z "${skip_specs[$spec]}" ]; then
         echo "::: $spec"
+
+        if [ -n "${BUILDER_EPOCH}" ] && grep -q BUILDER_RPM_VERSION "$spec"; then
+          sed -i "/Name:/a Epoch: ${BUILDER_EPOCH}" "$spec"
+        fi
+
         # Download sources
         spectool -g -R "$spec"
         
