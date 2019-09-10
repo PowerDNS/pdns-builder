@@ -14,6 +14,10 @@ WORKDIR /build
 COPY src/ src/
 RUN mkdir /sdist
 
+# Test if the -B option works
+ARG MYCOOLARG
+RUN test "${MYCOOLARG}" = 'iLikeTests'
+
 # Build module A
 @IF [ ! -z "$M_all$M_a" ]
 RUN cd src/ && tar -cvzf /sdist/demo-a-$BUILDER_VERSION.tar.gz --transform "s,^,demo-a-$BUILDER_VERSION/," demo-a.sh
