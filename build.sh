@@ -225,9 +225,9 @@ set -e
 #dockerfile="Dockerfile_${target}_${BUILDER_VERSION}" 
 dockerfile="Dockerfile_${target}.tmp"
 dockerfilepath="$BUILDER_TMP/$dockerfile"
-cd "$BUILDER_SUPPORT_ROOT/dockerfiles"
-BUILDER_TARGET="$target" tmpl_debug=1 tmpl_comment='###' "$BUILDER_ROOT/templating/templating.sh" "$template" > "$dockerfilepath"
-cd - > /dev/null
+
+BUILDER_TARGET="$target" tmpl_debug=1 tmpl_comment='###' "$BUILDER_ROOT/templating/templating.sh" "$templatepath" > "$dockerfilepath"
+
 [ -z "$quiet" ] && echo "Generated $dockerfilepath"
 
 #######################################################################
