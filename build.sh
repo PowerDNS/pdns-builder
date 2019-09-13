@@ -66,6 +66,7 @@ usage() {
     echo "USAGE:    $0 <target>"
     echo
     echo "Options:"
+    echo "  -B ARG=VAL      - Add extra build arguments, can be passed more than once"
     echo "  -C              - Run docker build with --no-cache"
     echo "  -c              - Enable builder package cache"
     echo "  -V VERSION      - Override version (default: run gen-version)"
@@ -94,6 +95,7 @@ fi
 
 _version=""
 declare -a dockeropts
+declare -a buildargs
 verbose=""
 quiet=""
 dockeroutdev=/dev/stdout
@@ -111,7 +113,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:b:e:" opt; do
+while getopts ":CcV:R:svqm:Pp:b:e:B:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -150,6 +152,8 @@ while getopts ":CcV:R:svqm:Pp:b:e:" opt; do
         echo -e "${color_red}WARNING: Skipping install tests, because not all packages are being built${color_reset}"
         ;;
     b)  cache_buster="$OPTARG"
+        ;;
+    B)  buildargs+=("--build-arg ${OPTARG}")
         ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
@@ -243,6 +247,7 @@ buildcmd=(docker build --build-arg BUILDER_VERSION="$BUILDER_VERSION"
                        --build-arg PIP_TRUSTED_HOST="$PIP_TRUSTED_HOST"
                        --build-arg npm_config_registry="$npm_config_registry"
                        --build-arg BUILDER_CACHE_BUSTER="$cache_buster_value"
+                       ${buildargs[@]}
                        -t "$image" "${dockeropts[@]}" -f "$dockerfilepath" .)
 [ -z "$quiet" ] && echo "+ ${buildcmd[*]}"
 
