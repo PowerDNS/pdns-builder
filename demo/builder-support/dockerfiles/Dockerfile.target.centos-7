@@ -14,5 +14,6 @@ RUN yum install -y /usr/bin/python3
 
 # Do a test install and verify
 # Can be skipped with skiptests=1 in the environment
-@EXEC [ "$skiptests" = "" ] && include Dockerfile.rpmtest
-
+@IF [ "$skiptests" = "" ]
+@INCLUDE Dockerfile.rpmtest
+@ENDIF
