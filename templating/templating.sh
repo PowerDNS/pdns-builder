@@ -38,21 +38,20 @@ include() {
 
         elif [ ! -z "$skip" ]; then
             # nothing, in IF that evaluated to false
-            [ "$tmpl_debug" != "" ] && echo "$tmpl_comment     $line"
-            
+            [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
 
         elif [[ $line = ${tmpl_prefix}INCLUDE\ * ]]; then
-            include=${line#* }
+            include=$(find . -type f -name ${line#* } | head -n 1)
             include $include
 
         elif [[ $line = ${tmpl_prefix}EVAL\ * ]]; then
             line=${line#* }
             eval echo "\"$line\""
-        
+
         elif [[ $line = ${tmpl_prefix}EXEC\ * ]]; then
             line=${line#* }
             eval "$line"
-        
+
         elif [[ $line = ${tmpl_prefix}IF\ * ]]; then
             condition=${line#* }
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
