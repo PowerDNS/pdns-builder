@@ -70,6 +70,7 @@ usage() {
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
     echo "  -S              - Force running of install tests, even if this is not a full build"
     echo "  -s              - Skip install tests"
+    echo "  -t TAG          - Use TAG instead of builder-\$REPO_NAME-\$TARGET:\$VERSION. Without ':' in TAG, tag as TAG:\$VERSION"
     echo ""
     echo " docker build options:"
     echo "  -B ARG=VAL      - Add extra build arguments, can be passed more than once"
@@ -117,7 +118,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:b:e:B:" opt; do
+while getopts ":CcV:R:svqm:Pp:b:e:B:t:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -154,6 +155,8 @@ while getopts ":CcV:R:svqm:Pp:b:e:B:" opt; do
     p)  package_match="$OPTARG"
         export skiptests=1
         echo -e "${color_red}WARNING: Skipping install tests, because not all packages are being built${color_reset}"
+        ;;
+    t)  iprefix="$OPTARG"
         ;;
     b)  cache_buster="$OPTARG"
         ;;
@@ -238,8 +241,12 @@ cd - > /dev/null
 # Build docker images with artifacts inside
 #
 
-iprefix="builder-${repo_safe_name}-${target}"
+iprefix="${iprefix:-builder-${repo_safe_name}-${target}}"
 image="$iprefix:${BUILDER_VERSION}"
+if [[ "$iprefix" =~ ":" ]]; then
+  image="$iprefix"
+fi
+
 echo -e "${color_white}Building docker image: ${image}${color_reset}"
 
 buildcmd=(docker build --build-arg BUILDER_VERSION="$BUILDER_VERSION"
