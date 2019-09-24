@@ -118,27 +118,17 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:b:e:B:t:" opt; do
+while getopts ":B:b:Cce:m:Pp:qR:Sst:V:v" opt; do
     case $opt in
+    B)  buildargs+=("--build-arg ${OPTARG}")
+        ;;
+    b)  cache_buster="$OPTARG"
+        ;;
     C)  dockeropts+=('--no-cache')
         ;;
     c)  export BUILDER_CACHE=1
         ;;
-    V)  _version="$OPTARG"
-        ;;
-    R)  export BUILDER_RELEASE="$OPTARG"
-        ;;
     e)  export BUILDER_EPOCH="$OPTARG"
-        ;;
-    s)  export skiptests=1
-        echo "NOTE: Skipping install tests, as requested with -s"
-        ;;
-    S)  export forcetests=1
-        ;;
-    v)  verbose=1
-        ;;
-    q)  quiet=1
-        dockeroutdev=/dev/null
         ;;
     m)  export M_all=
         export skiptests=1
@@ -156,11 +146,21 @@ while getopts ":CcV:R:svqm:Pp:b:e:B:t:" opt; do
         export skiptests=1
         echo -e "${color_red}WARNING: Skipping install tests, because not all packages are being built${color_reset}"
         ;;
+    q)  quiet=1
+        dockeroutdev=/dev/null
+        ;;
+    R)  export BUILDER_RELEASE="$OPTARG"
+        ;;
+    S)  export forcetests=1
+        ;;
+    s)  export skiptests=1
+        echo "NOTE: Skipping install tests, as requested with -s"
+        ;;
     t)  iprefix="$OPTARG"
         ;;
-    b)  cache_buster="$OPTARG"
+    V)  _version="$OPTARG"
         ;;
-    B)  buildargs+=("--build-arg ${OPTARG}")
+    v)  verbose=1
         ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
