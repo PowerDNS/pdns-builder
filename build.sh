@@ -239,7 +239,7 @@ cd - > /dev/null
 #
 
 iprefix="builder-${repo_safe_name}-${target}"
-image="$iprefix:latest" # TODO: maybe use version instead of latest?
+image="$iprefix:${BUILDER_VERSION}"
 echo -e "${color_white}Building docker image: ${image}${color_reset}"
 
 buildcmd=(docker build --build-arg BUILDER_VERSION="$BUILDER_VERSION"
