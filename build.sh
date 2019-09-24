@@ -63,7 +63,7 @@ usage() {
     targets=$(ls $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | tr '\n' ' ')
     echo "Builds packages in Docker for a target distribution, or sdist for generic source packages."
     echo
-    echo "USAGE:    $0 <target>"
+    echo "USAGE:    $0 [options] <target>"
     echo
     echo "Options:"
     echo "  -q              - Be more quiet. Build error details are still printed on build error."
