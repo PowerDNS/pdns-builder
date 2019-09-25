@@ -70,7 +70,8 @@ usage() {
     echo "  -v              - Always show full docker build output (default: only steps and build error details)"
     echo "  -S              - Force running of install tests, even if this is not a full build"
     echo "  -s              - Skip install tests"
-    echo "  -t TAG          - Use TAG instead of builder-\$REPO_NAME-\$TARGET:\$VERSION. Without ':' in TAG, tag as TAG:\$VERSION"
+    echo "  -t TAG          - Use TAG instead of 'builder-\$REPO_NAME-\$TARGET' for the tagged image."
+    echo "  -T TAG_VERSION  - Use TAG_VERSION as the version of the image. 'latest' by default. set to 'version' to use the value from -V"
     echo ""
     echo " docker build options:"
     echo "  -B ARG=VAL      - Add extra build arguments, can be passed more than once"
@@ -117,8 +118,9 @@ BUILDER_MODULES=''
 
 package_match=""
 cache_buster=""
+iversion="latest"
 
-while getopts ":B:b:Cce:m:Pp:qR:Sst:V:v" opt; do
+while getopts ":B:b:Cce:m:Pp:qR:SsT:t:V:v" opt; do
     case $opt in
     B)  buildargs+=("--build-arg ${OPTARG}")
         ;;
@@ -155,6 +157,8 @@ while getopts ":B:b:Cce:m:Pp:qR:Sst:V:v" opt; do
         ;;
     s)  export skiptests=1
         echo "NOTE: Skipping install tests, as requested with -s"
+        ;;
+    T)  iversion="$OPTARG"
         ;;
     t)  iprefix="$OPTARG"
         ;;
@@ -242,9 +246,9 @@ cd - > /dev/null
 #
 
 iprefix="${iprefix:-builder-${repo_safe_name}-${target}}"
-image="$iprefix:${BUILDER_VERSION}"
-if [[ "$iprefix" =~ ":" ]]; then
-  image="$iprefix"
+image="$iprefix:$iversion"
+if [ "$iversion" = "version" ]; then
+  image="$iprefix:${BUILDER_VERSION}"
 fi
 
 echo -e "${color_white}Building docker image: ${image}${color_reset}"
