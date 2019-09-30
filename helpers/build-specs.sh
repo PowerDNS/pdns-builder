@@ -23,7 +23,7 @@ fi
 # Used for caching rpms between builds
 rpm_file_root=/root/rpmbuild/RPMS/
 function rpm_file_list {
-    find "$rpm_file_root" -type f | sed "s|$rpm_file_root||"
+    find "$rpm_file_root" -type f | sed "s|$rpm_file_root||" | sort
 }
 function file_hash {
     local spec="$1"
@@ -99,6 +99,10 @@ if [ ! -z "$reqs" ]; then
     yum install -y $reqs
 fi
 
+function new_rpms {
+    diff -u /tmp/rpms-before /tmp/rpms-after | tee /tmp/rpms-diff | grep -v '^[+][+]' | grep '^[+]' | sed 's/^[+]//'
+}
+
 for spec in "${specs[@]}"; do
     echo "==================================================================="
     echo "-> $spec"
@@ -117,11 +121,11 @@ for spec in "${specs[@]}"; do
         rpmbuild --define "_sdistdir /sdist" -ba "$spec"
         rpm_file_list > /tmp/rpms-after
 
-        diff /tmp/rpms-before /tmp/rpms-after | grep '^> ' | sed 's/^> /NEW: /'
+        new_rpms | sed 's/^/NEW: /'
+        cat /tmp/rpms-diff | sed 's/^/DIFF: /'
         if [ "$cache" = "1" ]; then
-            new_rpms=$(diff /tmp/rpms-before /tmp/rpms-after | grep '^> ' | sed 's/^> //')
             h=$(file_hash "$spec")
-            tar -C "$rpm_file_root" -cvf "/cache/new/$h.tar" $new_rpms 
+            tar -C "$rpm_file_root" -cvf "/cache/new/$h.tar" $(new_rpms)
         fi
     else
         echo "Skipping spec (BUILDER_SKIP or in cache)"
