@@ -68,6 +68,7 @@ usage() {
     echo "Options:"
     echo "  -B ARG=VAL      - Add extra build arguments, can be passed more than once"
     echo "  -C              - Run docker build with --no-cache"
+    echo "  -L <limit>=<softlimit>:<hardlimit> - Overrides the default docker daemon ulimits, can be passed more than once"
     echo "  -c              - Enable builder package cache"
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
@@ -113,7 +114,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:b:e:B:" opt; do
+while getopts ":CcV:R:svqm:Pp:b:e:B:L:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -154,6 +155,8 @@ while getopts ":CcV:R:svqm:Pp:b:e:B:" opt; do
     b)  cache_buster="$OPTARG"
         ;;
     B)  buildargs+=("--build-arg ${OPTARG}")
+        ;;
+    L)  buildargs+=("--ulimit" "${OPTARG}")
         ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
