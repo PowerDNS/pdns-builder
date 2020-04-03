@@ -192,6 +192,9 @@ if [ ! -f "$templatepath" ]; then
     usage
 fi
 
+# Exit on error
+set -e
+
 # Set version
 if [ "$_version" == "" ]; then
     if [ -x "$BUILDER_SUPPORT_ROOT/gen-version" ]; then
@@ -214,9 +217,6 @@ fi
 #######################################################################
 # Some initialization
 #
-
-# Exit on error
-set -e
 
 [ -d "$BUILDER_TMP" ] || mkdir "$BUILDER_TMP"
 
