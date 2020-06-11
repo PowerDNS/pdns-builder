@@ -1,7 +1,23 @@
 #!/bin/bash
 # Main package builder
 
-t_start=`date +%s`
+function get_ts() {
+  if $(which date > /dev/null 2>&1); then
+    date +%s
+  else
+    printf '%(%s)T'
+  fi
+}
+
+function get_date() {
+  if $(which date > /dev/null 2>&1); then
+    date +%Y%m%d-%H%M%S
+  else
+    printf '%(%Y%m%d-%H%M%S)T'
+  fi
+}
+
+t_start="$(get_ts)"
 
 # Use colors if stdout is a tty
 if [ -t 1 ]; then
@@ -61,26 +77,37 @@ fi
 
 usage() {
     targets=$(ls $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | tr '\n' ' ')
-    echo "Builds packages in Docker for a target distribution, or sdist for generic source packages."
+    echo "Builds packages in Docker or Kaniko for a target distribution, or sdist for generic source packages."
+    echo "By default, docker is used. This program calls 'docker', aliasing 'podman' to 'docker' will use podman"
     echo
-    echo "USAGE:    $0 <target>"
+    echo "USAGE:    $0 [OPTIONS] <target>"
     echo
-    echo "Options:"
+    echo "Depending on the mode (docker or kaniko) several options are available."
+    echo
+    echo "Mode options:"
+    echo "  -K              - Use kaniko instead of docker (expects '/kaniko/executor' to exist)."
+    echo
+    echo "Options shared between modes:"
     echo "  -B ARG=VAL      - Add extra build arguments, can be passed more than once"
-    echo "  -C              - Run docker build with --no-cache"
-    echo "  -L <limit>=<softlimit>:<hardlimit> - Overrides the default docker daemon ulimits, can be passed more than once"
-    echo "  -c              - Enable builder package cache"
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -m MODULES      - Build only specific components (comma separated; warning: this disables install tests)"
     echo "  -e EPOCH        - Set a specific Epoch for packages"
-    echo "  -P              - Run docker build with --pull"
+    echo "  -b VALUE        - Docker cache buster, set to 'always', 'daily', 'weekly' or a literal value."
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
+    echo "  -q              - Be more quiet. Build error details are still printed on build error."
+    echo "  -v              - Always show full build output (default: only steps and build error details)"
+    echo "  -c              - Enable builder package cache"
     echo "  -s              - Skip install tests"
     echo "  -S              - Force running of install tests, even if this is not a full build"
-    echo "  -v              - Always show full docker build output (default: only steps and build error details)"
-    echo "  -q              - Be more quiet. Build error details are still printed on build error."
-    echo "  -b VALUE        - Docker cache buster, set to 'always', 'daily', 'weekly' or a literal value."
+    echo
+    echo "Docker mode options, ignored in kaniko mode:"
+    echo "  -C              - Run docker build with --no-cache"
+    echo "  -L <limit>=<softlimit>:<hardlimit> - Overrides the default docker daemon ulimits, can be passed more than once"
+    echo "  -P              - Run docker build with --pull"
+    echo
+    echo "Kaniko mode options, ignored in docker mode:"
+    echo "  -k URL          - Use URL as the cache for kaniko layers."
     echo
     echo "Targets:  $targets"
     echo
@@ -96,11 +123,14 @@ fi
 
 _version=""
 declare -a dockeropts
+declare -a ulimitargs
 declare -a buildargs
 verbose=""
 quiet=""
 dockeroutdev=/dev/stdout
 forcetests=
+buildmode=docker
+declare -a kanikoargs
 
 # RPM release tag (%{dist} will always be appended)
 export BUILDER_RELEASE=1pdns
@@ -114,7 +144,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcV:R:svqm:Pp:b:e:B:L:" opt; do
+while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -154,9 +184,18 @@ while getopts ":CcV:R:svqm:Pp:b:e:B:L:" opt; do
         ;;
     b)  cache_buster="$OPTARG"
         ;;
-    B)  buildargs+=("--build-arg ${OPTARG}")
+    B)  buildargs+=("--build-arg" "${OPTARG}")
         ;;
-    L)  buildargs+=("--ulimit" "${OPTARG}")
+    K)  buildmode=kaniko
+        ;;
+    k)  if [[ "${kanikoargs[@]}" =~ "--cache=true" ]]; then
+          echo "-k can only be set once" >&2
+          exit 1
+        fi
+        kanikoargs+=("--cache=true")
+        kanikoargs+=("--cache-repo=${OPTARG}")
+        ;;
+    L)  ulimitargs+=("--ulimit" "${OPTARG}")
         ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
@@ -236,22 +275,35 @@ cd - > /dev/null
 #######################################################################
 # Build docker images with artifacts inside
 #
+buildargs+=("--build-arg" "BUILDER_VERSION=$BUILDER_VERSION")
+buildargs+=("--build-arg" "BUILDER_RELEASE=$BUILDER_RELEASE")
+buildargs+=("--build-arg" "BUILDER_PACKAGE_MATCH=$package_match")
+buildargs+=("--build-arg" "BUILDER_EPOCH=$BUILDER_EPOCH")
+buildargs+=("--build-arg" "APT_URL=$APT_URL")
+buildargs+=("--build-arg" "PIP_INDEX_URL=$PIP_INDEX_URL")
+buildargs+=("--build-arg" "PIP_TRUSTED_HOST=$PIP_TRUSTED_HOST")
+buildargs+=("--build-arg" "npm_config_registry=$npm_config_registry")
+buildargs+=("--build-arg" "BUILDER_CACHE_BUSTER=$cache_buster_value")
 
-iprefix="builder-${repo_safe_name}-${target}"
-image="$iprefix:latest" # TODO: maybe use version instead of latest?
-echo -e "${color_white}Building docker image: ${image}${color_reset}"
+declare -a buildcmd
 
-buildcmd=(docker build --build-arg BUILDER_VERSION="$BUILDER_VERSION"
-                       --build-arg BUILDER_RELEASE="$BUILDER_RELEASE"
-                       --build-arg BUILDER_PACKAGE_MATCH="$package_match"
-                       --build-arg BUILDER_EPOCH="$BUILDER_EPOCH"
-                       --build-arg APT_URL="$APT_URL"
-                       --build-arg PIP_INDEX_URL="$PIP_INDEX_URL"
-                       --build-arg PIP_TRUSTED_HOST="$PIP_TRUSTED_HOST"
-                       --build-arg npm_config_registry="$npm_config_registry"
-                       --build-arg BUILDER_CACHE_BUSTER="$cache_buster_value"
-                       ${buildargs[@]}
-                       -t "$image" "${dockeropts[@]}" -f "$dockerfilepath" .)
+if [ "${buildmode}" = "docker" ]; then
+  iprefix="builder-${repo_safe_name}-${target}"
+  image="$iprefix:latest" # TODO: maybe use version instead of latest?
+  echo -e "${color_white}Building docker image: ${image}${color_reset}"
+
+  buildcmd=(docker build
+    ${buildargs[@]}
+    ${ulimitargs[@]}
+    -t "$image" "${dockeropts[@]}" -f "$dockerfilepath" .)
+elif [ "${buildmode}" = "kaniko" ]; then
+  buildcmd=(/kaniko/executor --context ${PWD}
+    --dockerfile $dockerfilepath
+    --no-push
+    --verbosity debug
+    ${kanikoargs[@]}
+    ${buildargs[@]})
+fi
 [ -z "$quiet" ] && echo "+ ${buildcmd[*]}"
 
 # All of this basically just runs the docker build command prepared above, but 
@@ -268,31 +320,51 @@ else
     # Quiet: don't even show build steps, but still log to file.
     timestamp() {
         # Based on https://unix.stackexchange.com/questions/26728/
-        start=`date '+%s'`
+        start="$(get_ts)"
         while IFS= read -r line; do
-            now=`date '+%s'`
+            now="$(get_ts)"
             t=$(($now - $start))
             s=$(($t % 60))
             m=$(($t / 60))
             printf '[%2d:%02d] %s\n' "$m" "$s" "$line"
         done
     }
+
     docker_steps_output() {
-        # Only display steps, with FROM commands in bold
-        grep --line-buffered -E '^(Step [0-9]|::: )' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
+      # Only display steps, with FROM commands in bold
+      grep --line-buffered -E '^(Step [0-9]|::: )' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
     }
-    timestamp=$(date '+%Y%m%d-%H%M%S')
+
+    kaniko_steps_output() {
+      # Only show the commands (or cached versions of)
+      grep --line-buffered -E '^([A-Z]{4}\[....\]( Using caching version of cmd:)? [A-Z][A-Z]+ |::: )' | sed "$sed_nobuf" -E "s/^....\\[....\\] (.*)$/\\1/" | timestamp > "$dockeroutdev"
+    }
+
+    timestamp="$(get_date)"
     dockerlogfile="build_${target}_${BUILDER_VERSION}_${timestamp}.log"
     dockerlog="$BUILDER_TMP/${dockerlogfile}"
     touch "$dockerlog"
     ln -sf "$dockerlogfile" "$BUILDER_TMP/build_latest.log"
-    echo -e "Docker build logs can be found in ${color_white} $dockerlog ${color_reset} (use -v to output to stdout instead)"
-    "${buildcmd[@]}" | tee "$dockerlog" | docker_steps_output
-    if [ "${PIPESTATUS[0]}" != "0" ]; then
+    echo -e "Build logs can be found in ${color_white} $dockerlog ${color_reset} (use -v to output to stdout instead)"
+    retval=
+    if [ "${buildmode}" = "docker" ]; then
+      "${buildcmd[@]}" | tee "$dockerlog" | docker_steps_output
+      retval="${PIPESTATUS[0]}"
+    else
+      # Run command, remove colors, send to log
+      "${buildcmd[@]}" 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee "$dockerlog" | kaniko_steps_output
+      retval="${PIPESTATUS[0]}"
+    fi
+
+    if [ "${retval}" != "0" ]; then
         echo -e "${color_red}ERROR: Build failed. Last step log output:${color_reset}"
         # https://stackoverflow.com/questions/7724778/sed-return-last-occurrence-match-until-end-of-file
-	sed '/^Step [0-9]/h;//!H;$!d;x' "$dockerlog"
-    	echo -e "Full build logs can be found in ${color_white} $dockerlog ${color_reset}"
+        if [ "${buildmode}" = "docker" ]; then
+          sed '/^Step [0-9]/h;//!H;$!d;x' "$dockerlog"
+        elif [ "${buildmode}" = "kaniko" ]; then
+          sed '/^INFO\[....\] [A-Z][A-Z]+ /h;//!H;$!d;x' "$dockerlog"
+        fi
+        echo -e "Full build logs can be found in ${color_white} $dockerlog ${color_reset}"
         echo -e "${color_red}ERROR: Build failed${color_reset}"
         exit 1
     fi
@@ -301,76 +373,85 @@ fi
 #######################################################################
 # Copy artifacts out of the image through a container
 #
-
-dest="$BUILDER_TMP/$BUILDER_VERSION"
-[ -d "$dest" ] || mkdir "$dest"
-# Create (but do not start) a container with the image
-container=`docker create "$image"`
-# Remove container on exit
 function cleanup_container {
-    docker rm "$container" > /dev/null
+  docker rm "$container" > /dev/null
 }
-trap cleanup_container EXIT
-# Actual copy
-docker cp "$container:/sdist" "$dest"
-if [ "$target" != "sdist" ]; then 
+
+# In kaniko, these results just sit on the local fs
+dest=''
+
+if [ "${buildmode}" = "docker" ]; then
+  dest="$BUILDER_TMP/$BUILDER_VERSION"
+  [ -d "$dest" ] || mkdir "$dest"
+  # Create (but do not start) a container with the image
+  container=`docker create "$image"`
+  # Remove container on exit
+  trap cleanup_container EXIT
+  # Actual copy
+  docker cp "$container:/sdist" "$dest"
+  if [ "$target" != "sdist" ]; then 
     # docker cp has no way to just copy everything inside one dir into another dir
     [ -d "$dest/$target" ] || mkdir "$dest/$target"
     docker cp "$container:/dist" "$dest/$target/"
-fi
+  fi
 
-# Copy new cache assets to speedup the next build
-if [ "$BUILDER_CACHE" = "1" ]; then
+  # Copy new cache assets to speedup the next build
+  if [ "$BUILDER_CACHE" = "1" ]; then
     if docker cp "$container:/cache/new" "$cache/" ; then
-        if [ -d "$cache/new" ]; then
-            mv "$cache"/new/* "$cache/" || true
-        fi
+      if [ -d "$cache/new" ]; then
+        mv "$cache"/new/* "$cache/" || true
+      fi
     fi
-fi
+  fi
 
-# Update 'latest' symlink
-rm -f "$BUILDER_TMP/latest" || true
-ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
+  # Update 'latest' symlink
+  rm -f "$BUILDER_TMP/latest" || true
+  ln -sf "$BUILDER_VERSION" "$BUILDER_TMP/latest"
+fi
 
 #######################################################################
 # Build success output and post-build hooks
 #
-            
 # List the files we created
 if [ -z "$quiet" ]; then
     echo
     tree "$dest/sdist" 2>/dev/null || find "$dest/sdist"
-    if [ "$target" != "sdist" ]; then 
+    if [ "$target" != "sdist" ]; then
+      if [ "${buildmode}" = "docker" ]; then
         tree "$dest/$target" 2>/dev/null || find "$dest/$target"
+      elif [ "${buildmode}" = "kaniko" ]; then
+        tree "$dest/dist" 2>/dev/null || find "$dest/dist"
+      fi
     fi
 fi
 
-# Print this hint before hooks, in case they fail and you need to investigate
-echo
-echo "You can test manually with:  docker run -it --rm $image"
+if [ "${buildmode}" = "docker" ]; then
+  # Print this hint before hooks, in case they fail and you need to investigate
+  echo
+  echo "You can test manually with:  docker run -it --rm $image"
 
-# Run post-build-test hook
-if [ "$skiptests" != "1" ] && [ -x "$BUILDER_SUPPORT_ROOT/post-build-test" ]; then
-  if [ -z "$quiet" ]; then
-    echo
-    echo -e "Running post-build-test script"
+  # Run post-build-test hook
+  if [ "$skiptests" != "1" ] && [ -x "$BUILDER_SUPPORT_ROOT/post-build-test" ]; then
+    if [ -z "$quiet" ]; then
+      echo
+      echo -e "Running post-build-test script"
+    fi
+    BUILDER_IMAGE="${image}" BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build-test"
   fi
-  BUILDER_IMAGE="${image}" BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build-test"
-fi
 
-# Run post-build hook
-if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
-  if [ -z "$quiet" ]; then
-    echo
-    echo -e "Running post-build script"
+  # Run post-build hook
+  if [ -x "$BUILDER_SUPPORT_ROOT/post-build" ]; then
+    if [ -z "$quiet" ]; then
+      echo
+      echo -e "Running post-build script"
+    fi
+    BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build"
   fi
-  BUILDER_TARGET="${target}" "$BUILDER_SUPPORT_ROOT/post-build"
 fi
 
 # Report success
 echo
 echo -e "${color_green}SUCCESS, files can be found in ${dest}${color_reset}"
-t_end=`date +%s`
+t_end="$(get_ts)"
 runtime=$((t_end - t_start))
 echo "Build took $runtime seconds"
-
