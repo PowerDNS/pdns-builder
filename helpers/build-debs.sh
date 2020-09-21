@@ -74,6 +74,10 @@ $sourcename (${epoch_string}${BUILDER_DEB_VERSION}-${BUILDER_DEB_RELEASE}.${dist
 EOF
   fi
 
+  if [ -n "$BUILDER_PARALLEL" ]; then
+      # enable parallel builds, one job per available processor
+      export DEB_BUILD_OPTIONS='parallel='`nproc`
+  fi
   fakeroot debian/rules binary || exit 1
   popd
 done
