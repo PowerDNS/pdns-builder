@@ -75,8 +75,7 @@ EOF
   fi
 
   if [ -n "$BUILDER_PARALLEL" ]; then
-      # enable parallel builds, one job per available processor
-      export DEB_BUILD_OPTIONS='parallel='`nproc`
+      export DEB_BUILD_OPTIONS="parallel=$BUILDER_PARALLEL"
   fi
   fakeroot debian/rules binary || exit 1
   popd

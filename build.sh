@@ -89,6 +89,7 @@ usage() {
     echo
     echo "Options shared between modes:"
     echo "  -B ARG=VAL      - Add extra build arguments, can be passed more than once"
+    echo "  -N NUMCPUS      - Number of CPUs to use for build (default: 1)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -S              - Force running of install tests, even if this is not a full build"
     echo "  -V VERSION      - Override version (default: run gen-version)"
@@ -144,7 +145,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:" opt; do
+while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:N:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -196,6 +197,8 @@ while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:" opt; do
         kanikoargs+=("--cache-repo=${OPTARG}")
         ;;
     L)  ulimitargs+=("--ulimit" "${OPTARG}")
+        ;;
+    N)  export BUILDER_PARALLEL="$OPTARG"
         ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
@@ -284,6 +287,7 @@ buildargs+=("--build-arg" "PIP_INDEX_URL=$PIP_INDEX_URL")
 buildargs+=("--build-arg" "PIP_TRUSTED_HOST=$PIP_TRUSTED_HOST")
 buildargs+=("--build-arg" "npm_config_registry=$npm_config_registry")
 buildargs+=("--build-arg" "BUILDER_CACHE_BUSTER=$cache_buster_value")
+buildargs+=("--build-arg" "BUILDER_PARALLEL=$BUILDER_PARALLEL")
 
 declare -a buildcmd
 
