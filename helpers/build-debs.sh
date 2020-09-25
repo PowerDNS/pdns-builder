@@ -74,6 +74,9 @@ $sourcename (${epoch_string}${BUILDER_DEB_VERSION}-${BUILDER_DEB_RELEASE}.${dist
 EOF
   fi
 
+  # allow build to use all available processors
+  export DEB_BUILD_OPTIONS='parallel='`nproc`
+
   fakeroot debian/rules binary || exit 1
   popd
 done
