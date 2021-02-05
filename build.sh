@@ -76,7 +76,6 @@ fi
 #
 
 usage() {
-    targets=$(ls $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | tr '\n' ' ')
     echo "Builds packages in Docker or Kaniko for a target distribution, or sdist for generic source packages."
     echo "By default, docker is used. This program calls 'docker', aliasing 'podman' to 'docker' will use podman"
     echo
@@ -109,7 +108,9 @@ usage() {
     echo "Kaniko mode options, ignored in docker mode:"
     echo "  -k URL          - Use URL as the cache for kaniko layers."
     echo
-    echo "Targets:  $targets"
+    echo "Targets:"
+    ls -1 $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | sed 's/^/  /'
+
     echo
     [ -f "$BUILDER_SUPPORT_ROOT/usage.include.txt" ] && cat "$BUILDER_SUPPORT_ROOT/usage.include.txt"
     exit 1
