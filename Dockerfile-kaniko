@@ -9,7 +9,9 @@ RUN apk --no-cache add \
       bash \
       git \
       grep \
+      openssh-client \
       perl \
+      rsync \
       sed \
       tree
 
