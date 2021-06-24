@@ -26,4 +26,6 @@ script:
   - ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
   # - Third one is very fast due to the Docker layer cache
   - ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
+  # Do a reproducible centos-8 build (does not work for centos-7)
+  - ../tests/test-centos-8-reproducible.sh
 

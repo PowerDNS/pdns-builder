@@ -91,7 +91,7 @@ usage() {
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -m MODULES      - Build only specific components (comma separated; warning: this disables install tests)"
-    echo "  -e EPOCH        - Set a specific Epoch for packages"
+    echo "  -e EPOCH        - Set a specific Epoch for RPM packages"
     echo "  -b VALUE        - Docker cache buster, set to 'always', 'daily', 'weekly' or a literal value."
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -q              - Be more quiet. Build error details are still printed on build error."
@@ -248,6 +248,15 @@ else
 fi
 export BUILDER_VERSION
 
+# Set SOURCE_DATE_EPOCH to last commit timestamp, if unset
+# See https://reproducible-builds.org/docs/source-date-epoch/
+# It is still up to the Dockerfile to actually set this
+if [ -z "$SOURCE_DATE_EPOCH" ]; then
+    SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+    export SOURCE_DATE_EPOCH
+    echo "Setting SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH build arg"
+fi
+
 # Create cache directory for caching assets between builds
 if [ "$BUILDER_CACHE" = "1" ]; then
     cache="$BUILDER_ROOT/cache/$target"
@@ -285,6 +294,7 @@ buildargs+=("--build-arg" "PIP_INDEX_URL=$PIP_INDEX_URL")
 buildargs+=("--build-arg" "PIP_TRUSTED_HOST=$PIP_TRUSTED_HOST")
 buildargs+=("--build-arg" "npm_config_registry=$npm_config_registry")
 buildargs+=("--build-arg" "BUILDER_CACHE_BUSTER=$cache_buster_value")
+buildargs+=("--build-arg" "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH")
 
 declare -a buildcmd
 
