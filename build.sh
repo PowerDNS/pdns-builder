@@ -91,7 +91,7 @@ usage() {
     echo "  -V VERSION      - Override version (default: run gen-version)"
     echo "  -R RELEASE      - Override release tag (default: '1pdns', do not include %{dist} here)"
     echo "  -m MODULES      - Build only specific components (comma separated; warning: this disables install tests)"
-    echo "  -e EPOCH        - Set a specific Epoch for RPM packages"
+    echo "  -e EPOCH        - Set a specific version Epoch for RPM/DEB packages"
     echo "  -b VALUE        - Docker cache buster, set to 'always', 'daily', 'weekly' or a literal value."
     echo "  -p PACKAGENAME  - Build only spec files that have this string in their name (warning: this disables install tests)"
     echo "  -q              - Be more quiet. Build error details are still printed on build error."
