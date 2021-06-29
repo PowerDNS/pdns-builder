@@ -197,3 +197,49 @@ The templating implementation can be found in `templating/templating.sh`.
 When certain steps or commands are needed after building, add an exectuable
 file called `post-build` to `builder-support`. After a build, this file will
 be run.
+
+
+### Reproducible builds
+
+The builder has a few features to help with creating reprodicible builds.
+
+The builder sets a `SOURCE_DATE_EPOCH` build argument with the timestamp of the last
+commit as the value. This is not automatically propagated to the build environment.
+If you want to use this, add this to your Dockerfile at the place where you want to
+start using it:
+
+```
+ARG SOURCE_DATE_EPOCH
+```
+
+This will probably be the same place that you inject the `BUILDER_VERSION`.
+
+For vendor dependency builds, you probably do not want to use it, as it could make their
+artifacts change with every version change. Instead, you may want to set the
+`BUILDER_SOURCE_DATE_FROM_SPEC_MTIME` env var when building RPMs. If this is set, the
+build script will use the modification time of the spec file as the `SOURCE_DATE_EPOCH`.
+Examole usage:
+
+```
+RUN BUILDER_SOURCE_DATE_FROM_SPEC_MTIME=1 builder/helpers/build-specs.sh builder-support/vendor-specs/*.spec
+```
+
+The RPM build script always defines the following variables for reproducible RPM builds:
+
+```
+--define "_buildhost reproducible"
+--define "source_date_epoch_from_changelog Y"
+--define "clamp_mtime_to_source_date_epoch Y"
+--define "use_source_date_epoch_as_buildtime Y"
+```
+
+The `source_date_epoch_from_changelog` variable only has effect when no `SOURCE_DATE_EPOCH` is set.
+These variables are only supported in RHEL 8+ and derived distributions. RHEL 7 does not appear
+to support reproducible RPM builds.
+
+Keep in mind that the builder an only do so much, as any part of your build pipeline
+that creates non-reproducible artifacs will result in non-reproducible build output.
+For example, if the base image you use upgrades the compiler, the compiled output
+will likely change.
+
+

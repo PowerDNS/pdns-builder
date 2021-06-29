@@ -36,7 +36,7 @@ RUN mkdir /cache/new
 # Only vendor specs can safely use the builder cache for these reasons.
 @IF [ ! -z "$M_all$M_vendor" ]
 COPY builder-support/vendor-specs/ builder-support/vendor-specs/
-RUN BUILDER_CACHE_THIS=1 builder/helpers/build-specs.sh builder-support/vendor-specs/*.spec
+RUN BUILDER_CACHE_THIS=1 BUILDER_SOURCE_DATE_FROM_SPEC_MTIME=1 builder/helpers/build-specs.sh builder-support/vendor-specs/*.spec
 @ENDIF
 
 # You can override these build args for faster Python builds
@@ -48,6 +48,7 @@ RUN BUILDER_CACHE_THIS=1 builder/helpers/build-specs.sh builder-support/vendor-s
 # Set after vendor builds to not invalidate their cached layers every time
 ARG BUILDER_VERSION
 ARG BUILDER_RELEASE
+ARG SOURCE_DATE_EPOCH
 COPY --from=sdist /sdist /sdist
 RUN for file in /sdist/* ; do ln -s $file /root/rpmbuild/SOURCES/ ; done && ls /root/rpmbuild/SOURCES/
 

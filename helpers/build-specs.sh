@@ -113,12 +113,28 @@ for spec in "${specs[@]}"; do
           sed -i "/Name:/a Epoch: ${BUILDER_EPOCH}" "$spec"
         fi
 
+        # Use the modification time of the spec file as the SOURCE_DATE_EPOCH if
+        # BUILDER_SOURCE_DATE_FROM_SPEC_MTIME is set. This is useful for vendor packages
+        # that have independent versioning.
+        if [ -n "${BUILDER_SOURCE_DATE_FROM_SPEC_MTIME}" ]; then
+            SOURCE_DATE_EPOCH=$(stat -c '%Y' "$spec")
+            export SOURCE_DATE_EPOCH
+        fi
+
         # Download sources
         spectool -g -R "$spec"
         
         # Build the rpm and record which files are new
         rpm_file_list > /tmp/rpms-before
-        rpmbuild --define "_sdistdir /sdist" -ba "$spec"
+        # NOTE: source_date_epoch_from_changelog is always overriden by SOURCE_DATE_EPOCH if that is set.
+        # See https://fossies.org/linux/rpm/build/build.c#l_298
+        rpmbuild \
+            --define "_sdistdir /sdist" \
+            --define "_buildhost reproducible" \
+            --define "source_date_epoch_from_changelog Y" \
+            --define "clamp_mtime_to_source_date_epoch Y" \
+            --define "use_source_date_epoch_as_buildtime Y" \
+            -ba "$spec"
         rpm_file_list > /tmp/rpms-after
 
         new_rpms | sed 's/^/NEW: /'
