@@ -1,0 +1,39 @@
+---
+name: 'Run tests'
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 7 * * *'
+
+jobs:
+  tests:
+    name: Run tests
+    # on a ubuntu-20.04 VM
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ./demo/
+    steps:
+      - uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 5
+          submodules: recursive
+      - run: ./tests/test_versioning.sh
+        working-directory: .
+      - run: ./prepare.sh
+      - run: ./builder/build.sh -B MYCOOLARG=iLikeTests sdist
+      - run: ./builder/build.sh -B MYCOOLARG=iLikeTests centos-7
+      # Again, now very fast due to the layer cache 
+      - run: ./builder/build.sh -B MYCOOLARG=iLikeTests centos-7
+      # Three cache builds:
+      # - First one will write the vendor cache
+      - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
+      # - Second one will use the vendor cache, but the Docker layer cache gets invalidated by the new cache file
+      - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
+      # - Third one is very fast due to the Docker layer cache
+      - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
+      # Do a reproducible centos-8 build (does not work for centos-7)
+      - run: ../tests/test-centos-8-reproducible.sh
+

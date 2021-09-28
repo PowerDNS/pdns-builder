@@ -24,6 +24,6 @@ docker start "$redis_id"
 
 # Run redis-cli the built image (the last stage with install tests), connect
 # to our temporary Redis 4.x container and verify the Redis version is 4.x.
-docker run -it --link "$redis_id" "$BUILDER_IMAGE" redis-cli -h "$redis_id" INFO server \
+docker run -i --link "$redis_id" "$BUILDER_IMAGE" redis-cli -h "$redis_id" INFO server \
     | grep redis_version:4
 
