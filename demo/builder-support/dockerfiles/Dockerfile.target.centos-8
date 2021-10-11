@@ -14,6 +14,9 @@ RUN yum config-manager --set-enabled powertools
 # Do the actual rpm build
 @INCLUDE Dockerfile.rpmbuild
 
+# Generate provenance
+RUN /build/builder/helpers/generate-dnf-provenance.py /dist/rpm-provenance.json
+
 # Do a test install and verify
 # Can be skipped with skiptests=1 in the environment
 @EXEC [ "$skiptests" = "" ] && include Dockerfile.rpmtest
