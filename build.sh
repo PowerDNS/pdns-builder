@@ -107,6 +107,7 @@ usage() {
     echo
     echo "Kaniko mode options, ignored in docker mode:"
     echo "  -k URL          - Use URL as the cache for kaniko layers."
+    echo "  -r URL          - Use URL as registry mirror"
     echo
     echo "Targets:"
     ls -1 $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | sed 's/^/  /'
@@ -145,7 +146,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:" opt; do
+while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -195,6 +196,8 @@ while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:" opt; do
         fi
         kanikoargs+=("--cache=true")
         kanikoargs+=("--cache-repo=${OPTARG}")
+        ;;
+    r)  kanikoargs+=("--registry-mirror=${OPTARG}")
         ;;
     L)  ulimitargs+=("--ulimit" "${OPTARG}")
         ;;
