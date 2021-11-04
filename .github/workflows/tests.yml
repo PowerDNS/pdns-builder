@@ -32,8 +32,8 @@ jobs:
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
       # - Second one will use the vendor cache, but the Docker layer cache gets invalidated by the new cache file
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
-      # - Third one is very fast due to the Docker layer cache
-      - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
+      # - Third one is very fast due to the Docker layer cache, also generates provenance
+      - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests -t docker-images.json centos-7
+      - run: ../tests/test-docker-provenance.sh docker-images.json
       # Do a reproducible centos-8 build (does not work for centos-7)
       - run: ../tests/test-centos-8-reproducible.sh
-
