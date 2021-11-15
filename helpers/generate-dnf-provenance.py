@@ -4,7 +4,6 @@ This script uses yum and rpm to generate in-toto material provenance and
 writes the resulting JSON to stdout or to argv[0] if provided.
 """
 
-import binascii
 import dnf
 import json
 import sys
@@ -18,9 +17,6 @@ with dnf.Base() as db:
     q = db.sack.query()
 
     for pkg in q.installed():
-        digest_type = 'none'
-        checksum = 'not-available'
-
         in_toto_data.append(
             {
                 "uri": in_toto_fmt.format(
@@ -39,12 +35,10 @@ with dnf.Base() as db:
                     #     repository.
                     # Which is super lame, so we use the header checksum to
                     # have _something_.
-                    'sha1': str(binascii.hexlify(pkg.hdr_chksum[1]))
+                    'sha1': pkg.hdr_chksum[1].hex()
                 }
             }
         )
-
-print(in_toto_data)
 
 if len(sys.argv) > 1:
     with open(sys.argv[1], 'w') as f:
