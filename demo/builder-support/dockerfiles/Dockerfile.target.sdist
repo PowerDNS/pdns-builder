@@ -9,6 +9,8 @@ RUN apk add --no-cache tar
 ARG BUILDER_VERSION
 ARG SOURCE_DATE_EPOCH
 
+RUN echo "::: SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"; if [ "$SOURCE_DATE_EPOCH" -lt "1000" ]; then echo "::: INVALID SOURCE_DATE_EPOCH" ; exit 99 ; fi
+
 # Copying minimal set of files to avoid cache invalidation
 RUN mkdir /build
 WORKDIR /build
@@ -21,12 +23,12 @@ RUN test "${MYCOOLARG}" = 'iLikeTests'
 
 # Build module A
 @IF [ ! -z "$M_all$M_a" ]
-RUN cd src/ && tar --clamp-mtime --mtime="$SOURCE_DATE_EPOCH" -cvzf /sdist/demo-a-$BUILDER_VERSION.tar.gz --transform "s,^,demo-a-$BUILDER_VERSION/," demo-a.sh
+RUN cd src/ && tar --clamp-mtime --mtime="@$SOURCE_DATE_EPOCH" -cvzf /sdist/demo-a-$BUILDER_VERSION.tar.gz --transform "s,^,demo-a-$BUILDER_VERSION/," demo-a.sh
 @ENDIF
 
 # Build module B
 @IF [ ! -z "$M_all$M_a" ]
-RUN cd src/ && tar --clamp-mtime --mtime="$SOURCE_DATE_EPOCH" -cvzf /sdist/demo-b-$BUILDER_VERSION.tar.gz --transform "s,^,demo-b-$BUILDER_VERSION/," demo-b.sh
+RUN cd src/ && tar --clamp-mtime --mtime="@$SOURCE_DATE_EPOCH" -cvzf /sdist/demo-b-$BUILDER_VERSION.tar.gz --transform "s,^,demo-b-$BUILDER_VERSION/," demo-b.sh
 @ENDIF
 
 # Show contents for build debugging
