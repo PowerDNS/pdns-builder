@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build debian packages, after installing dependencies
-# This assumes the the source is unpacked and a debian/ directory exists
+# This assumes the source is unpacked and a debian/ directory exists
 
 helpers=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
