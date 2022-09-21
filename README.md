@@ -218,7 +218,7 @@ For vendor dependency builds, you probably do not want to use it, as it could ma
 artifacts change with every version change. Instead, you may want to set the
 `BUILDER_SOURCE_DATE_FROM_SPEC_MTIME` env var when building RPMs. If this is set, the
 build script will use the modification time of the spec file as the `SOURCE_DATE_EPOCH`.
-Examole usage:
+Example usage:
 
 ```
 RUN BUILDER_SOURCE_DATE_FROM_SPEC_MTIME=1 builder/helpers/build-specs.sh builder-support/vendor-specs/*.spec
