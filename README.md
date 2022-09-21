@@ -201,7 +201,7 @@ be run.
 
 ### Reproducible builds
 
-The builder has a few features to help with creating reprodicible builds.
+The builder has a few features to help with creating reproducible builds.
 
 The builder sets a `SOURCE_DATE_EPOCH` build argument with the timestamp of the last
 commit as the value. This is not automatically propagated to the build environment.
