@@ -126,7 +126,7 @@ for spec in "${specs[@]}"; do
         
         # Build the rpm and record which files are new
         rpm_file_list > /tmp/rpms-before
-        # NOTE: source_date_epoch_from_changelog is always overriden by SOURCE_DATE_EPOCH if that is set.
+        # NOTE: source_date_epoch_from_changelog is always overridden by SOURCE_DATE_EPOCH if that is set.
         # See https://fossies.org/linux/rpm/build/build.c#l_298
         rpmbuild \
             --define "_sdistdir /sdist" \
