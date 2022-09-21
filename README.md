@@ -194,7 +194,7 @@ The templating implementation can be found in `templating/templating.sh`.
 
 #### Post Build steps
 
-When certain steps or commands are needed after building, add an exectuable
+When certain steps or commands are needed after building, add an executable
 file called `post-build` to `builder-support`. After a build, this file will
 be run.
 
