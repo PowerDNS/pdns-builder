@@ -143,7 +143,7 @@ should be observed:
 
 The last stage to appear in the Dockerfile will be the resulting image of the
 docker build. This one must have source dists in `/sdist` and binaries in
-`/dist`, as this is where the build scripts copies the result artificats from.
+`/dist`, as this is where the build scripts copies the result artifacts from.
 Please keep in mind that the test stage could be skipped, so these also have to
 exist at the end of the package builder stage.
 
@@ -238,7 +238,7 @@ These variables are only supported in RHEL 8+ and derived distributions. RHEL 7 
 to support reproducible RPM builds.
 
 Keep in mind that the builder an only do so much, as any part of your build pipeline
-that creates non-reproducible artifacs will result in non-reproducible build output.
+that creates non-reproducible artifacts will result in non-reproducible build output.
 For example, if the base image you use upgrades the compiler, the compiled output
 will likely change.
 
