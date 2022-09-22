@@ -143,7 +143,7 @@ should be observed:
 
 The last stage to appear in the Dockerfile will be the resulting image of the
 docker build. This one must have source dists in `/sdist` and binaries in
-`/dist`, as this is where the build scripts copies the result artificats from.
+`/dist`, as this is where the build scripts copies the result artifacts from.
 Please keep in mind that the test stage could be skipped, so these also have to
 exist at the end of the package builder stage.
 
@@ -194,14 +194,14 @@ The templating implementation can be found in `templating/templating.sh`.
 
 #### Post Build steps
 
-When certain steps or commands are needed after building, add an exectuable
+When certain steps or commands are needed after building, add an executable
 file called `post-build` to `builder-support`. After a build, this file will
 be run.
 
 
 ### Reproducible builds
 
-The builder has a few features to help with creating reprodicible builds.
+The builder has a few features to help with creating reproducible builds.
 
 The builder sets a `SOURCE_DATE_EPOCH` build argument with the timestamp of the last
 commit as the value. This is not automatically propagated to the build environment.
@@ -218,7 +218,7 @@ For vendor dependency builds, you probably do not want to use it, as it could ma
 artifacts change with every version change. Instead, you may want to set the
 `BUILDER_SOURCE_DATE_FROM_SPEC_MTIME` env var when building RPMs. If this is set, the
 build script will use the modification time of the spec file as the `SOURCE_DATE_EPOCH`.
-Examole usage:
+Example usage:
 
 ```
 RUN BUILDER_SOURCE_DATE_FROM_SPEC_MTIME=1 builder/helpers/build-specs.sh builder-support/vendor-specs/*.spec
@@ -238,7 +238,7 @@ These variables are only supported in RHEL 8+ and derived distributions. RHEL 7 
 to support reproducible RPM builds.
 
 Keep in mind that the builder an only do so much, as any part of your build pipeline
-that creates non-reproducible artifacs will result in non-reproducible build output.
+that creates non-reproducible artifacts will result in non-reproducible build output.
 For example, if the base image you use upgrades the compiler, the compiled output
 will likely change.
 
