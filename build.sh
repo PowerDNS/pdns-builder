@@ -362,7 +362,7 @@ else
     echo -e "Build logs can be found in ${color_white} $dockerlog ${color_reset} (use -v to output to stdout instead)"
     retval=
     if [ "${buildmode}" = "docker" ]; then
-      "${buildcmd[@]}" | tee "$dockerlog" | docker_steps_output
+      "${buildcmd[@]}" 2>&1 | tee "$dockerlog" | docker_steps_output
       retval="${PIPESTATUS[0]}"
     else
       # Run command, remove colors, send to log
