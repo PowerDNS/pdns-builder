@@ -251,6 +251,10 @@ else
 fi
 export BUILDER_VERSION
 
+# Set other version formats that need to be available as build args
+source "$BUILDER_ROOT/helpers/functions.sh"
+set_python_src_versions  # sets BUILDER_PYTHON_SRC_VERSION
+
 # Set SOURCE_DATE_EPOCH to last commit timestamp, if unset
 # See https://reproducible-builds.org/docs/source-date-epoch/
 # It is still up to the Dockerfile to actually set this
@@ -292,6 +296,7 @@ buildargs+=("--build-arg" "BUILDER_VERSION=$BUILDER_VERSION")
 buildargs+=("--build-arg" "BUILDER_RELEASE=$BUILDER_RELEASE")
 buildargs+=("--build-arg" "BUILDER_PACKAGE_MATCH=$package_match")
 buildargs+=("--build-arg" "BUILDER_EPOCH=$BUILDER_EPOCH")
+buildargs+=("--build-arg" "BUILDER_PYTHON_SRC_VERSION=$BUILDER_PYTHON_SRC_VERSION")
 buildargs+=("--build-arg" "APT_URL=$APT_URL")
 buildargs+=("--build-arg" "PIP_INDEX_URL=$PIP_INDEX_URL")
 buildargs+=("--build-arg" "PIP_TRUSTED_HOST=$PIP_TRUSTED_HOST")
