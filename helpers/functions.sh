@@ -16,7 +16,8 @@ set_python_src_versions() {
   # 1.2.3.15.mybranch.g123456   => 1.2.3+15.mybranch.g123456
   # 1.2.3.15.g123456            => 1.2.3+15.g123456
   # 1.2.3.15.g123456.dirty      => 1.2.3+15.g123456.dirty
-  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | perl -pe 's,-alpha([0-9]+),a\1+,' | perl -pe 's,-beta([0-9]+),b\1+,' | perl -pe 's,-rc([0-9]+),rc\1+,' | perl -pe 's,\+$,,' | perl -pe 's,\+\.,+,' | perl -pe 's,^([0-9]+\.[0-9]+\.[0-9]+)\.(.*)$,\1+\2,' )"
+  # 1.2.3.130.HEAD.gbac839b2    => 1.2.3+130.head.gbac839b2
+  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | perl -pe 's,-alpha([0-9]+),a\1+,' | perl -pe 's,-beta([0-9]+),b\1+,' | perl -pe 's,-rc([0-9]+),rc\1+,' | perl -pe 's,\+$,,' | perl -pe 's,\+\.,+,' | perl -pe 's,^([0-9]+\.[0-9]+\.[0-9]+)\.(.*)$,\1+\2,' | tr A-Z a-z )"
 }
 
 set_debian_versions() {

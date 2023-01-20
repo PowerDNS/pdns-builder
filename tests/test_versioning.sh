@@ -25,7 +25,8 @@ src_versions=(1.0.0
               1.1.0.15.branchname.g123456
               1.1.0.15.branchname.g123456.dirty
               1.2.0-alpha1.10.branch.g123456
-              1.2.0-alpha1.10.branch.g123456.dirty)
+              1.2.0-alpha1.10.branch.g123456.dirty
+              1.2.3.130.HEAD.gbac839b2)
 deb_versions=(1.0.0
               1.0.0+dirty
               1.0.0~beta1
@@ -37,7 +38,8 @@ deb_versions=(1.0.0
               1.1.0+branchname.15.g123456
               1.1.0+branchname.15.g123456.dirty
               1.2.0~alpha1+branch.10.g123456
-              1.2.0~alpha1+branch.10.g123456.dirty)
+              1.2.0~alpha1+branch.10.g123456.dirty
+              1.2.3+HEAD.130.gbac839b2)
 rpm_versions=(1.0.0
               1.0.0
               1.0.0
@@ -49,7 +51,8 @@ rpm_versions=(1.0.0
               1.1.0
               1.1.0
               1.2.0
-              1.2.0)
+              1.2.0
+              1.2.3)
 rpm_releases=($builder_release
               dirty.$builder_release
               0.beta1.$builder_release
@@ -61,7 +64,8 @@ rpm_releases=($builder_release
               branchname.15.g123456.$builder_release
               branchname.15.g123456.dirty.$builder_release
               0.alpha1.branch.10.g123456.$builder_release
-              0.alpha1.branch.10.g123456.dirty.$builder_release)
+              0.alpha1.branch.10.g123456.dirty.$builder_release
+              HEAD.130.gbac839b2.$builder_release)
 
 # These comply to PEP 440
 py_versions=(1.0.0
@@ -75,7 +79,8 @@ py_versions=(1.0.0
              1.1.0+15.branchname.g123456
              1.1.0+15.branchname.g123456.dirty
              1.2.0a1+10.branch.g123456
-             1.2.0a1+10.branch.g123456.dirty)
+             1.2.0a1+10.branch.g123456.dirty
+             1.2.3+130.head.gbac839b2)
 
 for ctr in ${!src_versions[@]}; do
   BUILDER_VERSION=${src_versions[$ctr]}
