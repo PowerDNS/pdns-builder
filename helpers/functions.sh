@@ -2,19 +2,22 @@
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
 set_python_src_versions() {
-  # setuptools is very strict about PEP 440. SO we need some magic to make this go away
-  # TODO real PEP 440 support
+  # setuptools is very strict about PEP 440
+  # See https://peps.python.org/pep-0440/
 
-  # BUILDER_VERSION                BUILDER_PYTHON_SRC_VERSION       REAL PEP 440
-  # 1.2.3                       => 1.2.3                            1.2.3
-  # 1.2.3.0.g123456             => 1.2.3.0.g123456                  1.2.3+0.g123456
-  # 1.2.3-alpha1                => 1.2.3a1                          1.2.3a1
-  # 1.2.3-alpha1.0.g123456      => 1.2.3-alpha1.0.g123456           1.2.3a1+0.g123456
-  # 1.2.3-alpha1.15.g123456     => 1.2.3-alpha1.15.g123456          1.2.3a1+15.g123456
-  # 1.2.3-rc2.12.branch.g123456 => 1.2.3-rc2.branch.12.g123456      1.2.3rc2+branch.12.g123456
-  # 1.2.3.15.mybranch.g123456   => 1.2.3.15.mybranch.g123456        1.2.3+mybranch.15.g123456
-  # 1.2.3.15.g123456            => 1.2.3.15.g123456                 1.2.3+15.g123456
-  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | perl -pe 's,-alpha([0-9]+)$,a\1,' | perl -pe 's,-beta([0-9]+)$,b\1,' | perl -pe 's,-rc([0-9]+)$,rc\1,')"
+  # BUILDER_VERSION                BUILDER_PYTHON_SRC_VERSION
+  # 1.2.3                       => 1.2.3
+  # 1.2.3.dirty                 => 1.2.3+dirty
+  # 1.2.3.0.g123456             => 1.2.3+0.g123456
+  # 1.2.3-alpha1                => 1.2.3a1
+  # 1.2.3-alpha1.0.g123456      => 1.2.3a1+0.g123456
+  # 1.2.3-alpha1.15.g123456     => 1.2.3a1+15.g123456
+  # 1.2.3-rc2.12.branch.g123456 => 1.2.3rc2+branch.12.g123456
+  # 1.2.3.15.mybranch.g123456   => 1.2.3+15.mybranch.g123456
+  # 1.2.3.15.g123456            => 1.2.3+15.g123456
+  # 1.2.3.15.g123456.dirty      => 1.2.3+15.g123456.dirty
+  # 1.2.3.130.HEAD.gbac839b2    => 1.2.3+130.head.gbac839b2
+  export BUILDER_PYTHON_SRC_VERSION="$(echo ${BUILDER_VERSION} | perl -pe 's,-alpha([0-9]+),a\1+,' | perl -pe 's,-beta([0-9]+),b\1+,' | perl -pe 's,-rc([0-9]+),rc\1+,' | perl -pe 's,\+$,,' | perl -pe 's,\+\.,+,' | perl -pe 's,^([0-9]+\.[0-9]+\.[0-9]+)\.(.*)$,\1+\2,' | tr A-Z a-z )"
 }
 
 set_debian_versions() {
