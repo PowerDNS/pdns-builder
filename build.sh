@@ -104,6 +104,7 @@ usage() {
     echo "  -C              - Run docker build with --no-cache"
     echo "  -L <limit>=<softlimit>:<hardlimit> - Overrides the default docker daemon ulimits, can be passed more than once"
     echo "  -P              - Run docker build with --pull"
+    echo "  -t FILENAME     - Generate a JSON file with provenance of the docker images used"
     echo
     echo "Kaniko mode options, ignored in docker mode:"
     echo "  -k URL          - Use URL as the cache for kaniko layers."
@@ -129,6 +130,7 @@ declare -a ulimitargs
 declare -a buildargs
 verbose=""
 quiet=""
+docker_provenance=""
 dockeroutdev=/dev/stdout
 forcetests=
 buildmode=docker
@@ -146,7 +148,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:" opt; do
+while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:t:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -200,6 +202,8 @@ while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:" opt; do
     r)  kanikoargs+=("--registry-mirror=${OPTARG}")
         ;;
     L)  ulimitargs+=("--ulimit" "${OPTARG}")
+        ;;
+    t)  docker_provenance="${OPTARG}"
         ;;
     \?) echo "Invalid option: -$OPTARG" >&2
         usage
@@ -387,6 +391,26 @@ else
         echo -e "${color_red}ERROR: Build failed${color_reset}"
         exit 1
     fi
+fi
+
+if [ ! -z "${docker_provenance}" ]; then
+    echo '[' > ${docker_provenance}
+    declare -a ignored_images
+    set_comma=''
+    while read line; do
+        line_elems=($line)
+        if [[ "${line_elems[0]}" =~ [Ff][Rr][Oo][Mm] && ! "${ignored_images[*]}" =~ "${line_elems[1]}" ]]; then
+            if [ ! -z "${set_comma}" ]; then
+                echo ',' >> ${docker_provenance}
+            fi
+            docker image inspect -f '{"uri": "docker:{{ index .RepoTags 0 }}", "digest": { {{ $s := split .ID ":" }}"{{ index $s 0}}": "{{ index $s 1}}" } }' ${line_elems[1]} >> ${docker_provenance}
+            set_comma="y"
+        fi
+        if [[ "${line_elems[2]}" =~ [Aa][Ss] ]]; then
+            ignored_images+=("${line_elems[3]}")
+        fi
+    done < ${dockerfilepath}
+    echo ']' >> ${docker_provenance}
 fi
 
 #######################################################################
