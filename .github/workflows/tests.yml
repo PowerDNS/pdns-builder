@@ -38,6 +38,6 @@ jobs:
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
       # - Third one is very fast due to the Docker layer cache
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
-      # Do a reproducible centos-8 build (does not work for centos-7)
-      - run: ../tests/test-centos-8-reproducible.sh
+      # Do a reproducible rocky-8 build (does not work for centos-7)
+      - run: ../tests/test-rocky-8-reproducible.sh
 
