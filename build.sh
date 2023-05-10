@@ -351,7 +351,7 @@ else
 
     docker_steps_output() {
       # Only display steps, with FROM commands in bold
-      grep --line-buffered -E '^(Step [0-9]|::: )' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/" | timestamp > "$dockeroutdev"
+      grep --line-buffered -E '^(Step [0-9]|::: |^#[0-9]+ (\[|[0-9.]+ :::))' | sed "$sed_nobuf" -E "s/^(Step [0-9].* )(FROM .*)$/\\1${color_white_e}\\2${color_reset_e}/; s/^#[0-9]+ //" | timestamp > "$dockeroutdev"
     }
 
     kaniko_steps_output() {
