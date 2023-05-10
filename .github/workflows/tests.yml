@@ -20,6 +20,8 @@ jobs:
         with:
           fetch-depth: 5
           submodules: recursive
+      - run: ./test-templating.sh
+        working-directory: ./templating
       - run: ./tests/test_versioning.sh
         working-directory: .
       - run: ./prepare.sh

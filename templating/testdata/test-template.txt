@@ -1,0 +1,66 @@
+Lines can start with @INCLUDE, @EVAL or @EXEC for special processing, they
+have no effect when not at the start of a line.
+
+@EXEC FOO=123
+
+Direct @INCLUDE:
+@INCLUDE test-template-include1.txt
+
+@EVAL The value of FOO is $FOO
+
+Empty @EXEC:
+@EXEC
+
+Conditional include in @EXEC:
+@EXEC [ "$FOO" = "123" ] && include test-template-include2.txt
+
+@IF [ "$FOO" = "123" ]
+This line is only printed if $FOO = "123", which is the case.
+@IF true
+Nested IF that is true.
+@ENDIF
+In between IFs.
+@IF [ "$FOO" = "wrong" ]
+THIS WILL NEVER BE PRINTED.
+@ENDIF
+Last line of first IF.
+@ENDIF
+
+@IF true
+@IF true
+@IF true
+Triple nested IF that is true.
+@ENDIF
+@IF true
+Also true.
+@ENDIF
+Second level.
+@ENDIF
+First level.
+@ENDIF
+
+@IF false
+@IF true
+@IF true
+Triple nested IF that is FALSE.
+@ENDIF
+@ENDIF
+@ENDIF
+
+@IF true
+@IF false
+@IF true
+Triple nested IF that is FALSE.
+@ENDIF
+@ENDIF
+@ENDIF
+
+@IF true
+@IF true
+@IF false
+Triple nested IF that is FALSE.
+@ENDIF
+@ENDIF
+@ENDIF
+
+Other lines are printed unchanged.
