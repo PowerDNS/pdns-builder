@@ -4,8 +4,10 @@ name: 'Run tests'
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '0 7 * * *'
+  # Disabled, because Github appears to disable the whole workflow if you have a schedule
+  # and no updates for 60 days...
+  #  schedule:
+  #- cron: '0 7 * * *'
 
 jobs:
   tests:
