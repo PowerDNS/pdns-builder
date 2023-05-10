@@ -30,7 +30,13 @@ Second level.
 First level.
 
 
+true1
+true1
 
+true1
+true2
+true2
+true1
 
 Other lines are printed unchanged.
 

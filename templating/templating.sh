@@ -28,17 +28,39 @@ tmpl_prefix=${tmpl_prefix:-@}
 
 include() {
     [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $1"
-    local skip=0
+    # Current level of @IF we are in
+    local iflevel=0
+    # Set to the @IF level that disabled the current block, if any
+    local ifdisablelevel=0
     local line
     local condition
     ( cat "$1" && echo ) | while IFS= read -r line; do
-        if [[ $line = ${tmpl_prefix}ENDIF* ]]; then
-            # Only decrement if larger than 0, because it was only
-            # incremented if the block was disabled.
-            [ $skip -gt 0 ] && skip=$((skip-1))
-            [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
 
-        elif [ $skip -gt 0 ]; then
+        if [[ $line = ${tmpl_prefix}IF\ * ]]; then
+            [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
+            iflevel=$((iflevel+1))
+            if ! [ $ifdisablelevel -gt 0 ]; then
+                # Only if not already in a disabled IF statement
+                condition=${line#* }
+                if ! eval "$condition" ; then
+                    # Disabled at the current IF level
+                    ifdisablelevel=$iflevel
+                fi
+            fi
+
+        elif [[ $line = ${tmpl_prefix}ENDIF* ]]; then
+            [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
+            if [ $iflevel = 0 ] ; then
+                echo "ERROR: @ENDIF without matching @IF in file $1" > /dev/stderr
+                exit 30
+            fi
+            iflevel=$((iflevel-1))
+            if [ $ifdisablelevel -gt $iflevel ]; then
+                # We left the IF block level that was disabled
+                ifdisablelevel=0
+            fi
+
+        elif [ $ifdisablelevel -gt 0 ]; then
             # nothing, in IF that evaluated to false
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment     $line"
             
@@ -55,14 +77,10 @@ include() {
             line=${line#* }
             eval "$line"
         
-        elif [[ $line = ${tmpl_prefix}IF\ * ]]; then
-            condition=${line#* }
-            [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
-            eval "$condition" || skip=$((skip+1))
-
         else
             echo "$line"
         fi
+    
     done
     [ "$tmpl_debug" != "" ] && echo "$tmpl_comment /$1"
 }

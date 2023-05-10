@@ -48,19 +48,27 @@ Triple nested IF that is FALSE.
 @ENDIF
 
 @IF true
+true1
 @IF false
+false2
 @IF true
 Triple nested IF that is FALSE.
 @ENDIF
+false2 MUST NOT APPEAR, BUG!
 @ENDIF
+true1
 @ENDIF
 
 @IF true
+true1
 @IF true
+true2
 @IF false
 Triple nested IF that is FALSE.
 @ENDIF
+true2
 @ENDIF
+true1
 @ENDIF
 
 Other lines are printed unchanged.
