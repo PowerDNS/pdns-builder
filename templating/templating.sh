@@ -19,7 +19,7 @@ if [ "$1" = "" ]; then
     echo "Environment variables:"
     echo "  tmpl_debug:   If set, markers are printed around included files"
     echo "  tmpl_comment: Characters to use to start the marker comments (default: #)"
-    echo "  tmpl_prefix:  Characters to start processing directives (default: @)"
+    echo "  tmpl_prefix:  Regexp to match processing directive prefixes (default: @)"
     exit 1
 fi
 
@@ -65,16 +65,16 @@ include() {
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment     $line"
             
 
-        elif [[ $line = ${tmpl_prefix}INCLUDE\ * ]]; then
-            include=${line#* }
+        elif [[ $line =~ ^${tmpl_prefix}INCLUDE\ +([^ ]*) ]]; then
+            include="${BASH_REMATCH[1]}"
             include $include
 
-        elif [[ $line = ${tmpl_prefix}EVAL\ * ]]; then
-            line=${line#* }
+        elif [[ $line =~ ^${tmpl_prefix}EVAL\ (.*) ]]; then
+            line="${BASH_REMATCH[1]}"
             eval echo "\"$line\""
         
-        elif [[ $line = ${tmpl_prefix}EXEC\ * ]]; then
-            line=${line#* }
+        elif [[ $line =~ ^${tmpl_prefix}EXEC\ (.*) ]]; then
+            line="${BASH_REMATCH[1]}"
             eval "$line"
         
         else
