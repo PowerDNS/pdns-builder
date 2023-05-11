@@ -65,15 +65,15 @@ include() {
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment     $line"
             
 
-        elif [[ $line =~ ^${tmpl_prefix}INCLUDE\ +([^ ]*) ]]; then
+        elif [[ $line =~ ^${tmpl_prefix}\ *INCLUDE\ +([^ ]*) ]]; then
             include="${BASH_REMATCH[1]}"
             include $include
 
-        elif [[ $line =~ ^${tmpl_prefix}EVAL\ (.*) ]]; then
+        elif [[ $line =~ ^${tmpl_prefix}\ *EVAL\ (.*) ]]; then
             line="${BASH_REMATCH[1]}"
             eval echo "\"$line\""
         
-        elif [[ $line =~ ^${tmpl_prefix}EXEC\ (.*) ]]; then
+        elif [[ $line =~ ^${tmpl_prefix}\ *EXEC\ (.*) ]]; then
             line="${BASH_REMATCH[1]}"
             eval "$line"
         

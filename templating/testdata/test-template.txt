@@ -81,6 +81,7 @@ true2
 Triple nested IF that is FALSE.
 @    ENDIF
 true2
+@    EXEC echo "Other directives also get indenting"
 @  ENDIF
 true1
 @ENDIF
