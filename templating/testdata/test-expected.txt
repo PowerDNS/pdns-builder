@@ -38,5 +38,13 @@ true2
 true2
 true1
 
+# Test @IF with extra indenting after the @
+
+true1
+true2
+true2
+true1
+
+
 Other lines are printed unchanged.
 

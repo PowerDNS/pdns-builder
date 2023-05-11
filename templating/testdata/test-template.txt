@@ -71,4 +71,19 @@ true2
 true1
 @ENDIF
 
+# Test @IF with extra indenting after the @
+
+@IF true
+true1
+@  IF true
+true2
+@    IF false
+Triple nested IF that is FALSE.
+@    ENDIF
+true2
+@  ENDIF
+true1
+@ENDIF
+
+
 Other lines are printed unchanged.
