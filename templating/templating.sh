@@ -36,7 +36,7 @@ include() {
     local condition
     ( cat "$1" && echo ) | while IFS= read -r line; do
 
-        if [[ $line =~ ^${tmpl_prefix}\ *IF?\ (.*) ]]; then
+        if [[ $line =~ ^${tmpl_prefix}\ *IF\ (.*) ]]; then
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
             iflevel=$((iflevel+1))
             if ! [ $ifdisablelevel -gt 0 ]; then
@@ -48,7 +48,7 @@ include() {
                 fi
             fi
 
-        elif [[ $line =~ ^${tmpl_prefix}\ *ENDIF? ]]; then
+        elif [[ $line =~ ^${tmpl_prefix}\ *ENDIF ]]; then
             [ "$tmpl_debug" != "" ] && echo "$tmpl_comment $line"
             if [ $iflevel = 0 ] ; then
                 echo "ERROR: @ENDIF without matching @IF in file $1" > /dev/stderr

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Test if rcoky-8 RPM builds are reproducible
+# Test if rocky-8 RPM builds are reproducible
 # Must be run from demo dir
 
 set -ex
