@@ -1,0 +1,3 @@
+[Include file 1 start]
+@EVAL value of FOO in include is also $FOO
+[Include file 1 end]

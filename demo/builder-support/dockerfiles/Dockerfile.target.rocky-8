@@ -3,13 +3,14 @@
 
 # This defines the distribution base layer
 # Put only the bare minimum of common commands here, without dev tools
-FROM centos:8 as dist-base
+FROM rockylinux:8 as dist-base
 ARG BUILDER_CACHE_BUSTER=
-RUN yum install -y epel-release
+#RUN dnf install -y epel-release
 # Python 3.4+ is needed for the builder helpers
-RUN yum install -y /usr/bin/python3
-RUN yum install -y dnf-plugins-core
-RUN yum config-manager --set-enabled powertools
+RUN dnf install -y /usr/bin/python3
+RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+RUN dnf install -y dnf-plugins-core
+RUN dnf config-manager --set-enabled powertools
 
 # Do the actual rpm build
 @INCLUDE Dockerfile.rpmbuild

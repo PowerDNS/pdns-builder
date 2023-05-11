@@ -4,8 +4,10 @@ name: 'Run tests'
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '0 7 * * *'
+  # Disabled, because Github appears to disable the whole workflow if you have a schedule
+  # and no updates for 60 days...
+  #  schedule:
+  #- cron: '0 7 * * *'
 
 jobs:
   tests:
@@ -20,6 +22,8 @@ jobs:
         with:
           fetch-depth: 5
           submodules: recursive
+      - run: ./test-templating.sh
+        working-directory: ./templating
       - run: ./tests/test_versioning.sh
         working-directory: .
       - run: ./prepare.sh
@@ -34,6 +38,6 @@ jobs:
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
       # - Third one is very fast due to the Docker layer cache
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
-      # Do a reproducible centos-8 build (does not work for centos-7)
-      - run: ../tests/test-centos-8-reproducible.sh
+      # Do a reproducible rocky-8 build (does not work for centos-7)
+      - run: ../tests/test-rocky-8-reproducible.sh
 
