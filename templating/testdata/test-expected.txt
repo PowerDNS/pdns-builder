@@ -1,0 +1,51 @@
+Lines can start with @INCLUDE, @EVAL or @EXEC for special processing, they
+have no effect when not at the start of a line.
+
+
+Direct @INCLUDE:
+[Include file 1 start]
+value of FOO in include is also 123
+[Include file 1 end]
+
+
+The value of FOO is 123
+
+Empty @EXEC:
+@EXEC
+
+Conditional include in @EXEC:
+[Second include start]
+Hello world!
+[Second include end]
+
+
+This line is only printed if $FOO = "123", which is the case.
+Nested IF that is true.
+In between IFs.
+Last line of first IF.
+
+Triple nested IF that is true.
+Also true.
+Second level.
+First level.
+
+
+true1
+true1
+
+true1
+true2
+true2
+true1
+
+# Test @IF with extra indenting after the @
+
+true1
+true2
+true2
+Other directives also get indenting
+true1
+
+
+Other lines are printed unchanged.
+
