@@ -86,3 +86,5 @@ include() {
 }
 
 include "$1"
+
+exit 0
