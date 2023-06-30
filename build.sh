@@ -319,7 +319,8 @@ elif [ "${buildmode}" = "kaniko" ]; then
   buildcmd=(/kaniko/executor --context ${PWD}
     --dockerfile $dockerfilepath
     --no-push
-    --verbosity debug
+    #--verbosity debug
+    --verbosity info
     ${kanikoargs[@]}
     ${buildargs[@]})
 fi
