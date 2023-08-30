@@ -243,3 +243,33 @@ For example, if the base image you use upgrades the compiler, the compiled outpu
 will likely change.
 
 
+## Custom Kaniko Image for PDNS Builder
+
+https://hub.docker.com/repository/docker/powerdns/kaniko-pdns-builder/
+
+A custom Kaniko image for PDNS Builder, because the official Kaniko debug image only offers Busybox and the PDNS Builder also needs Bash, Git, Perl, rsync and perhaps more.
+
+### Building
+
+- `docker build -f Dockerfile-kaniko-pdns-builder -t powerdns/kaniko-pdns-builder:1.0.0 .`
+
+### Distributing
+
+- `docker tag powerdns/kaniko-pdns-builder:1.0.0 powerdns/kaniko-pdns-builder:latest`
+- `docker push powerdns/kaniko-pdns-builder:1.0.0`
+- `docker push powerdns/kaniko-pdns-builder:latest`
+
+### Running
+
+- `docker run -it --entrypoint warmer powerdns/kaniko-pdns-builder:1.0.0 bash`
+- `docker run -it powerdns/kaniko-pdns-builder:1.0.0`
+
+### Resources
+
+From:
+
+- https://github.com/GoogleContainerTools/kaniko/blob/main/deploy/Dockerfile
+- https://hub.docker.com/r/pernodricard/kaniko-alpine/dockerfile
+- https://stackoverflow.com/a/69251129
+
+- `curl --silent https://gcr.io/v2/kaniko-project/executor/tags/list | jq .`

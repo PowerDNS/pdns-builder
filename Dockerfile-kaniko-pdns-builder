@@ -1,0 +1,19 @@
+FROM gcr.io/kaniko-project/executor:v1.12.0-debug AS kaniko
+
+FROM alpine:3.11
+
+RUN apk --no-cache add bash binutils coreutils git grep openssh-client perl rsync sed tree
+
+COPY --from=kaniko /kaniko /kaniko
+COPY --from=kaniko /etc/nsswitch.conf /etc/nsswitch.conf
+COPY --from=busybox:musl /bin /busybox
+
+ENV HOME /root
+ENV USER root
+ENV PATH $PATH:/kaniko:/busybox
+ENV SSL_CERT_DIR /kaniko/ssl/certs
+ENV DOCKER_CONFIG /kaniko/.docker/
+ENV DOCKER_CREDENTIAL_GCR_CONFIG /kaniko/.config/gcloud/docker_credential_gcr_config.json
+ENV GOOGLE_APPLICATION_CREDENTIALS='/kaniko/.docker/config.json'
+
+ENTRYPOINT ["/kaniko/executor"]
