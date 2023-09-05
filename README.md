@@ -249,6 +249,10 @@ https://hub.docker.com/repository/docker/powerdns/kaniko-pdns-builder/
 
 A custom Kaniko image for PDNS Builder, because the official Kaniko debug image only offers Busybox and the PDNS Builder also needs Bash, Git, Perl, rsync and perhaps more.
 
+### Deprecation Warning
+
+Eventually we want to get rid of Kaniko in our build systems, so do not depend too hard on this image.
+
 ### Building
 
 - `docker build -f Dockerfile-kaniko-pdns-builder -t powerdns/kaniko-pdns-builder:1.0.0 .`

@@ -1,5 +1,6 @@
 FROM gcr.io/kaniko-project/executor:v1.12.0-debug AS kaniko
 
+# XXX 3.11 is EOL since 2021, update to 3.18
 FROM alpine:3.11
 
 RUN apk --no-cache add bash binutils coreutils git grep openssh-client perl rsync sed tree
