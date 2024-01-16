@@ -77,6 +77,6 @@ EOF
   # allow build to use all available processors
   export DEB_BUILD_OPTIONS='parallel='`nproc`
 
-  fakeroot debian/rules binary || exit 1
+  dpkg-buildpackage -b || exit 1
   popd
 done
