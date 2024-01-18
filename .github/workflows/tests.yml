@@ -40,4 +40,4 @@ jobs:
       - run: ./builder/build.sh -c -B MYCOOLARG=iLikeTests centos-7
       # Do a reproducible rocky-8 build (does not work for centos-7)
       - run: ../tests/test-rocky-8-reproducible.sh
-
+      - run: ../tests/test-rocky-9-reproducible.sh
