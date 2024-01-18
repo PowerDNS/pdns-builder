@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/libexec/platform-python
 """
 This script uses yum and rpm to generate in-toto material provenance and
 writes the resulting JSON to stdout or to argv[0] if provided.
