@@ -44,15 +44,21 @@ for dir in "${dirs[@]}"; do
       exit 1
     fi
     # Let's try really hard to find the release name of the distribution
-    distro_release="$(source /etc/os-release; printf ${VERSION_CODENAME})"
-    if [ -z "${distro_release}" -a -n "$(grep 'VERSION_ID="14.04"' /etc/os-release)" ]; then
-      distro_release='trusty'
-    fi
+    # Prefer something that sorts well over time
+    distro_release="$(source /etc/os-release; [ ! -z ${ID} ] && [ ! -z ${VERSION_ID} ] && echo -n ${ID}${VERSION_ID})" # this will look like 'debian12' or 'ubuntu22.04'
     if [ -z "${distro_release}" ]; then
-      distro_release="$(perl -n -e '/VERSION=".* \((.*)\)"/ && print $1' /etc/os-release)"
-    fi
-    if [ -z "${distro_release}" ]; then
-      distro_release="$(perl -n -e '/PRETTY_NAME="Debian GNU\/Linux (.*)\/sid"/ && print $1' /etc/os-release)"
+      # we should only end up here on Debian Testing
+      distro="$(source /etc/os-release; echo -n ${ID})"
+      if [ ! -z "${distro}" ]; then
+        releasename="$(perl -n -e '/PRETTY_NAME="Debian GNU\/Linux (.*)\/sid"/ && print $1' /etc/os-release)"
+        if [ ! -z "${releasename}" ]; then
+          apt-get -y --no-install-recommends install distro-info-data
+          releasenum="$(grep ${releasename} /usr/share/distro-info/debian.csv | cut -f1 -d,)"
+          if [ ! -z "${releasenum}" ]; then
+            distro_release="${distro}${releasenum}"
+          fi
+        fi
+      fi
     fi
     if [ -z "${distro_release}" ]; then
       echo 'Unable to determine distribution codename!'
