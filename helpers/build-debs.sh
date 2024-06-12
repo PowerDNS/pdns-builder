@@ -86,3 +86,9 @@ EOF
   dpkg-buildpackage -b || exit 1
   popd
 done
+
+for dir in "${dirs[@]}"; do
+    echo "==================================================================="
+    echo "Building source artifacts for ${dir}"
+    dpkg-source --build ${dir}
+done
