@@ -110,7 +110,7 @@ usage() {
     echo "  -r URL          - Use URL as registry mirror"
     echo
     echo "Targets:"
-    ls -1 $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | sed 's/^/  /'
+    ls -1 $BUILDER_SUPPORT_ROOT/dockerfiles/Dockerfile.target.* | sed 's/.*Dockerfile.target.//' | sed 's/^/  /' | sort -V
 
     echo
     [ -f "$BUILDER_SUPPORT_ROOT/usage.include.txt" ] && cat "$BUILDER_SUPPORT_ROOT/usage.include.txt"
