@@ -103,6 +103,11 @@ function new_rpms {
     diff -u /tmp/rpms-before /tmp/rpms-after | tee /tmp/rpms-diff | grep -v '^[+][+]' | grep '^[+]' | sed 's/^[+]//'
 }
 
+rpmbuild_options=""
+if [ -n "${BUILDER_SKIP_CHECKS}" ]; then
+    rpmbuild_options="--nocheck"
+fi
+
 for spec in "${specs[@]}"; do
     echo "==================================================================="
     echo "-> $spec"
@@ -123,12 +128,13 @@ for spec in "${specs[@]}"; do
 
         # Download sources
         spectool -g -R "$spec"
-        
+
         # Build the rpm and record which files are new
         rpm_file_list > /tmp/rpms-before
         # NOTE: source_date_epoch_from_changelog is always overridden by SOURCE_DATE_EPOCH if that is set.
         # See https://fossies.org/linux/rpm/build/build.c#l_298
         rpmbuild \
+            ${rpmbuild_options} \
             --define "_sdistdir /sdist" \
             --define "_buildhost reproducible" \
             --define "source_date_epoch_from_changelog Y" \
@@ -147,4 +153,3 @@ for spec in "${specs[@]}"; do
         echo "Skipping spec (BUILDER_SKIP or in cache)"
     fi
 done
-
