@@ -12,8 +12,8 @@ on:
 jobs:
   tests:
     name: Run tests
-    # on a ubuntu-20.04 VM
-    runs-on: ubuntu-20.04
+    # on a ubuntu-24.04 VM
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ./demo/
