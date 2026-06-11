@@ -137,9 +137,9 @@ for spec in "${specs[@]}"; do
             ${rpmbuild_options} \
             --define "_sdistdir /sdist" \
             --define "_buildhost reproducible" \
-            --define "source_date_epoch_from_changelog Y" \
-            --define "clamp_mtime_to_source_date_epoch Y" \
-            --define "use_source_date_epoch_as_buildtime Y" \
+            --define "source_date_epoch_from_changelog 1" \
+            --define "clamp_mtime_to_source_date_epoch 1" \
+            --define "use_source_date_epoch_as_buildtime 1" \
             -ba "$spec"
         rpm_file_list > /tmp/rpms-after
 
