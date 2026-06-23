@@ -104,6 +104,7 @@ usage() {
     echo "  -C              - Run docker build with --no-cache"
     echo "  -L <limit>=<softlimit>:<hardlimit> - Overrides the default docker daemon ulimits, can be passed more than once"
     echo "  -P              - Run docker build with --pull"
+    echo "  -A ARCH         - Build for a given architecture. The architecture names follow docker naming (e.g. 'linux/amd64')"
     echo
     echo "Kaniko mode options, ignored in docker mode:"
     echo "  -k URL          - Use URL as the cache for kaniko layers."
@@ -146,7 +147,7 @@ BUILDER_MODULES=''
 package_match=""
 cache_buster=""
 
-while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:" opt; do
+while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:A:" opt; do
     case $opt in
     C)  dockeropts+=('--no-cache')
         ;;
@@ -187,6 +188,8 @@ while getopts ":CcKk:V:R:svqm:Pp:b:e:B:L:r:" opt; do
     b)  cache_buster="$OPTARG"
         ;;
     B)  buildargs+=("--build-arg" "${OPTARG}")
+        ;;
+    A)  dockeropts+=("--platform" "${OPTARG}")
         ;;
     K)  buildmode=kaniko
         ;;
