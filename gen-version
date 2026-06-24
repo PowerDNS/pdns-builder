@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 VERSION="unknown"
 
 DIRTY=""
@@ -82,8 +82,9 @@ if [ ! -z "$(git rev-parse --abbrev-ref HEAD 2> /dev/null)" ]; then
 
   BRANCH=".$(echo ${BRANCH} | perl -p -e 's/[^[:alnum:]]//g;')"
 
-  # If the branch is master, remove it
+  # If the branch is master or main, remove it
   [ "${BRANCH}" = ".master" ] && BRANCH=''
+  [ "${BRANCH}" = ".main" ] && BRANCH=''
 
   VERSION="${LAST_TAG}.${COMMITS_SINCE_TAG}${BRANCH}.${GIT_HASH}${DIRTY}"
 fi
